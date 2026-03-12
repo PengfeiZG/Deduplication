@@ -1,0 +1,65 @@
+Topic: AI Alert Deduplication and Incident CLustering
+
+Research Topic: Can semantic machine learning based clustering of Suricata IDS alerts reduce alert volume
+    and analyst workload while preserving accuraccy of incidents
+
+    Reducing Alert Fatigue
+
+pip install streamlit plotly
+streamlit run app.py
+
+pip install -r requirements.txt
+
+python C:\Users\zpeng\OneDrive\Desktop\Deduplication\pipeline.py --eve C:\Users\zpeng\Downloads\release\wrcddc-2018\eve.json --out C\Users\zpeng\OneDrive\Desktop\Deduplication\out2 --window-min 10 --eps 0.20 --min-samples 3
+python -m src.pipeline --eve C:\Users\zpeng\Downloads\release\wrcddc-2018\eve.json --out C:\Users\zpeng\OneDrive\Desktop --limit 5000 --eps 0.25 --min-samples 3
+
+Batch Size
+    How many alerts you send through the embedding model at once instead of one by one.
+    If you embed alerts one at a time, the model does this repeatedly:
+        Load alert text
+        Tokenize
+        Run the neural network forward pass
+        Return one vector
+    If you have 50,000 alerts, that’s 50,000 forward passes.
+
+The code avoids embedding alerts that cannot form incidents 
+A lot of those alerts are “singletons” (candidate groups smaller than min_samples) and can never become a cluster. Embedding them is wasted time.
+
+Why this works:
+DBSCAN requires at least min_samples points.
+Candidate groups smaller than that will never produce clusters.
+Removing them before embeddings can drop workload massively on datasets with many sparse sources.
+
+DBSCAN
+python -m src.pipeline --eve "C:\path\to\eve.json" --out out --algo dbscan --eps 0.25 --min-samples 3
+
+Hierarchical
+python -m src.pipeline --eve "C:\path\to\eve.json" --out out --algo hierarchical --dist-threshold 0.25 --min-samples 3
+
+What to tune for hierarchical
+    --dist-threshold plays a similar role to DBSCAN --eps:
+        lower = stricter, more clusters
+        higher = looser, fewer clusters
+
+    Start with 0.20, 0.25, 0.30 and compare:
+        incident count
+        mixed-cluster rate (your coherence metric)
+
+
+Manual incident spot checks (must do)
+
+    Pick 3–5 incidents, preferably:
+        one very large
+        one medium
+        one small
+
+    For each incident:
+        Print 10–20 alerts
+    Check:
+        same source IP?
+        same destination?
+        same attack type?
+        reasonable time span?
+
+    Use the helper in viz.py:
+        show_incident_example(df, incident_id, k=12)

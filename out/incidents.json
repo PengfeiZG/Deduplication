@@ -1,0 +1,2639 @@
+[
+  {
+    "incident_id": "INC-00012",
+    "cluster_id": 12,
+    "start_time": "2018-03-23T13:58:23.172033-06:00",
+    "end_time": "2018-03-23T13:58:31.190092-06:00",
+    "src_ips": [
+      "10.128.0.241"
+    ],
+    "dest_ips": [
+      "10.47.8.20"
+    ],
+    "dest_ports": [
+      80
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 10,
+    "top_signatures": {
+      "ET EXPLOIT NETGEAR WNR2000v5 hidden_lang_avi Stack Overflow (CVE-2016-10174)": 10
+    },
+    "max_severity": 1,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T13:58:23.172033-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.8.20",
+        "signature": "ET EXPLOIT NETGEAR WNR2000v5 hidden_lang_avi Stack Overflow (CVE-2016-10174)",
+        "category": "Attempted Administrator Privilege Gain",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T13:58:24.603886-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.8.20",
+        "signature": "ET EXPLOIT NETGEAR WNR2000v5 hidden_lang_avi Stack Overflow (CVE-2016-10174)",
+        "category": "Attempted Administrator Privilege Gain",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T13:58:26.810666-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.8.20",
+        "signature": "ET EXPLOIT NETGEAR WNR2000v5 hidden_lang_avi Stack Overflow (CVE-2016-10174)",
+        "category": "Attempted Administrator Privilege Gain",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T13:58:28.664351-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.8.20",
+        "signature": "ET EXPLOIT NETGEAR WNR2000v5 hidden_lang_avi Stack Overflow (CVE-2016-10174)",
+        "category": "Attempted Administrator Privilege Gain",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T13:58:28.963300-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.8.20",
+        "signature": "ET EXPLOIT NETGEAR WNR2000v5 hidden_lang_avi Stack Overflow (CVE-2016-10174)",
+        "category": "Attempted Administrator Privilege Gain",
+        "severity": 1
+      }
+    ],
+    "summary": "10 related alerts likely tied to 'ET EXPLOIT NETGEAR WNR2000v5 hidden_lang_avi Stack Overflow (CVE-2016-10174)' from 10.128.0.241 targeting 10.47.8.20 on ports 80."
+  },
+  {
+    "incident_id": "INC-00026",
+    "cluster_id": 26,
+    "start_time": "2018-03-23T13:59:50.695990-06:00",
+    "end_time": "2018-03-23T13:59:51.698258-06:00",
+    "src_ips": [
+      "10.47.2.100"
+    ],
+    "dest_ips": [
+      "128.31.0.63",
+      "208.80.154.15"
+    ],
+    "dest_ports": [
+      80
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 14,
+    "top_signatures": {
+      "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management": 14
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T13:59:50.695990-0600",
+        "src_ip": "10.47.2.100",
+        "dest_ip": "208.80.154.15",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T13:59:50.700059-0600",
+        "src_ip": "10.47.2.100",
+        "dest_ip": "128.31.0.63",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T13:59:50.775677-0600",
+        "src_ip": "10.47.2.100",
+        "dest_ip": "208.80.154.15",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T13:59:50.951637-0600",
+        "src_ip": "10.47.2.100",
+        "dest_ip": "128.31.0.63",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T13:59:51.093550-0600",
+        "src_ip": "10.47.2.100",
+        "dest_ip": "208.80.154.15",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      }
+    ],
+    "summary": "14 related alerts likely tied to 'ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management' from 10.47.2.100 targeting 208.80.154.15, 128.31.0.63 on ports 80."
+  },
+  {
+    "incident_id": "INC-00017",
+    "cluster_id": 17,
+    "start_time": "2018-03-23T14:00:45.421410-06:00",
+    "end_time": "2018-03-23T14:08:56.587307-06:00",
+    "src_ips": [
+      "10.128.0.241",
+      "10.128.0.244"
+    ],
+    "dest_ips": [
+      "10.47.1.58",
+      "10.47.5.58",
+      "10.47.8.20"
+    ],
+    "dest_ports": [
+      80
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 55,
+    "top_signatures": {
+      "ET EXPLOIT NETGEAR WNR2000v5 hidden_lang_avi Stack Overflow (CVE-2016-10174)": 51,
+      "ET POLICY Outgoing Basic Auth Base64 HTTP Password detected unencrypted": 4
+    },
+    "max_severity": 1,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:00:45.421410-0600",
+        "src_ip": "10.128.0.244",
+        "dest_ip": "10.47.1.58",
+        "signature": "ET POLICY Outgoing Basic Auth Base64 HTTP Password detected unencrypted",
+        "category": "Potential Corporate Privacy Violation",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:02:34.911733-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.8.20",
+        "signature": "ET EXPLOIT NETGEAR WNR2000v5 hidden_lang_avi Stack Overflow (CVE-2016-10174)",
+        "category": "Attempted Administrator Privilege Gain",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:02:35.207118-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.8.20",
+        "signature": "ET EXPLOIT NETGEAR WNR2000v5 hidden_lang_avi Stack Overflow (CVE-2016-10174)",
+        "category": "Attempted Administrator Privilege Gain",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:02:35.917997-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.8.20",
+        "signature": "ET EXPLOIT NETGEAR WNR2000v5 hidden_lang_avi Stack Overflow (CVE-2016-10174)",
+        "category": "Attempted Administrator Privilege Gain",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:02:36.455139-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.8.20",
+        "signature": "ET EXPLOIT NETGEAR WNR2000v5 hidden_lang_avi Stack Overflow (CVE-2016-10174)",
+        "category": "Attempted Administrator Privilege Gain",
+        "severity": 1
+      }
+    ],
+    "summary": "55 related alerts likely tied to 'ET EXPLOIT NETGEAR WNR2000v5 hidden_lang_avi Stack Overflow (CVE-2016-10174)' from 10.128.0.244 targeting 10.47.8.20, 10.47.1.58, 10.47.5.58 on ports 80."
+  },
+  {
+    "incident_id": "INC-00037",
+    "cluster_id": 37,
+    "start_time": "2018-03-23T14:00:46.134839-06:00",
+    "end_time": "2018-03-23T14:00:59.255607-06:00",
+    "src_ips": [
+      "10.47.8.142"
+    ],
+    "dest_ips": [
+      "10.128.0.215"
+    ],
+    "dest_ports": [
+      55894,
+      65343
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 5,
+    "top_signatures": {
+      "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server": 5
+    },
+    "max_severity": 2,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:00:46.134839-0600",
+        "src_ip": "10.47.8.142",
+        "dest_ip": "10.128.0.215",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:00:46.134840-0600",
+        "src_ip": "10.47.8.142",
+        "dest_ip": "10.128.0.215",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:00:59.254687-0600",
+        "src_ip": "10.47.8.142",
+        "dest_ip": "10.128.0.215",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:00:59.254689-0600",
+        "src_ip": "10.47.8.142",
+        "dest_ip": "10.128.0.215",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:00:59.255607-0600",
+        "src_ip": "10.47.8.142",
+        "dest_ip": "10.128.0.215",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      }
+    ],
+    "summary": "5 related alerts likely tied to 'ET SCAN Non-Allowed Host Tried to Connect to MySQL Server' from 10.47.8.142 targeting 10.128.0.215 on ports 55894, 65343."
+  },
+  {
+    "incident_id": "INC-00007",
+    "cluster_id": 7,
+    "start_time": "2018-03-23T14:00:48.081213-06:00",
+    "end_time": "2018-03-23T14:05:47.320804-06:00",
+    "src_ips": [
+      "10.128.0.215"
+    ],
+    "dest_ips": [
+      "10.47.8.1",
+      "10.47.8.100",
+      "10.47.8.142",
+      "10.47.8.151",
+      "10.47.8.152",
+      "10.47.8.153",
+      "10.47.8.154",
+      "10.47.8.155",
+      "10.47.8.20",
+      "10.47.8.200",
+      "10.47.8.208",
+      "10.47.8.218",
+      "10.47.8.30",
+      "10.47.8.54",
+      "10.47.8.55",
+      "10.47.8.58",
+      "10.47.8.59"
+    ],
+    "dest_ports": [
+      80,
+      443,
+      445,
+      631,
+      1433,
+      1434,
+      2869,
+      4443,
+      5000,
+      5357,
+      5800,
+      8000,
+      8080,
+      8082,
+      8093,
+      8888,
+      10243
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 810,
+    "top_signatures": {
+      "ET SCAN Possible Nmap User-Agent Observed": 807,
+      "ET SCAN Behavioral Unusual Port 1434 traffic Potential Scan or Infection": 1,
+      "ET SCAN Behavioral Unusual Port 1433 traffic Potential Scan or Infection": 1
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:00:48.081213-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.55",
+        "signature": "ET SCAN Behavioral Unusual Port 1434 traffic Potential Scan or Infection",
+        "category": "Misc activity",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:00:48.180247-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.54",
+        "signature": "ET SCAN Behavioral Unusual Port 1433 traffic Potential Scan or Infection",
+        "category": "Misc activity",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:03:55.908596-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.1",
+        "signature": "ET SCAN Possible Nmap User-Agent Observed",
+        "category": "Web Application Attack",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:03:55.908811-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.1",
+        "signature": "ET SCAN Possible Nmap User-Agent Observed",
+        "category": "Web Application Attack",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:03:55.910210-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.1",
+        "signature": "ET SCAN Possible Nmap User-Agent Observed",
+        "category": "Web Application Attack",
+        "severity": 1
+      }
+    ],
+    "summary": "810 related alerts likely tied to 'ET SCAN Possible Nmap User-Agent Observed' from 10.128.0.215 targeting 10.47.8.100, 10.47.8.218, 10.47.8.152 on ports 80, 443, 445, 631, 1433, 1434, 2869, 4443, 5000, 5357."
+  },
+  {
+    "incident_id": "INC-00035",
+    "cluster_id": 35,
+    "start_time": "2018-03-23T14:00:54.429410-06:00",
+    "end_time": "2018-03-23T14:06:28.841290-06:00",
+    "src_ips": [
+      "10.47.8.100"
+    ],
+    "dest_ips": [
+      "10.128.0.215",
+      "10.128.0.227"
+    ],
+    "dest_ports": [
+      61213,
+      65300
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 6,
+    "top_signatures": {
+      "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server": 6
+    },
+    "max_severity": 2,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:00:54.429410-0600",
+        "src_ip": "10.47.8.100",
+        "dest_ip": "10.128.0.215",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:00:54.429412-0600",
+        "src_ip": "10.47.8.100",
+        "dest_ip": "10.128.0.215",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:00:54.431115-0600",
+        "src_ip": "10.47.8.100",
+        "dest_ip": "10.128.0.215",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:05:27.443725-0600",
+        "src_ip": "10.47.8.100",
+        "dest_ip": "10.128.0.227",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:05:27.443727-0600",
+        "src_ip": "10.47.8.100",
+        "dest_ip": "10.128.0.227",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      }
+    ],
+    "summary": "6 related alerts likely tied to 'ET SCAN Non-Allowed Host Tried to Connect to MySQL Server' from 10.47.8.100 targeting 10.128.0.215, 10.128.0.227 on ports 61213, 65300."
+  },
+  {
+    "incident_id": "INC-00005",
+    "cluster_id": 5,
+    "start_time": "2018-03-23T14:01:15.090355-06:00",
+    "end_time": "2018-03-23T14:09:13.169663-06:00",
+    "src_ips": [
+      "10.128.0.214"
+    ],
+    "dest_ips": [
+      "10.47.1.15",
+      "10.47.1.154",
+      "10.47.1.186",
+      "10.47.1.66",
+      "10.47.1.73",
+      "10.47.2.75",
+      "10.47.8.40"
+    ],
+    "dest_ports": [
+      445
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 7,
+    "top_signatures": {
+      "ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection": 7
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:01:15.090355-0600",
+        "src_ip": "10.128.0.214",
+        "dest_ip": "10.47.1.73",
+        "signature": "ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection",
+        "category": "Misc activity",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:19.411911-0600",
+        "src_ip": "10.128.0.214",
+        "dest_ip": "10.47.1.15",
+        "signature": "ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection",
+        "category": "Misc activity",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:34.837339-0600",
+        "src_ip": "10.128.0.214",
+        "dest_ip": "10.47.1.66",
+        "signature": "ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection",
+        "category": "Misc activity",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:03:34.737739-0600",
+        "src_ip": "10.128.0.214",
+        "dest_ip": "10.47.1.154",
+        "signature": "ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection",
+        "category": "Misc activity",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:04:19.479265-0600",
+        "src_ip": "10.128.0.214",
+        "dest_ip": "10.47.1.186",
+        "signature": "ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection",
+        "category": "Misc activity",
+        "severity": 3
+      }
+    ],
+    "summary": "7 related alerts likely tied to 'ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection' from 10.128.0.214 targeting 10.47.1.73, 10.47.1.15, 10.47.1.66 on ports 445."
+  },
+  {
+    "incident_id": "INC-00015",
+    "cluster_id": 15,
+    "start_time": "2018-03-23T14:02:09.227768-06:00",
+    "end_time": "2018-03-23T14:02:58.554443-06:00",
+    "src_ips": [
+      "10.128.0.241"
+    ],
+    "dest_ips": [
+      "10.47.3.1"
+    ],
+    "dest_ports": [
+      80
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 30,
+    "top_signatures": {
+      "SURICATA TLS invalid record/traffic": 15,
+      "SURICATA TLS invalid record version": 15
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:02:09.227768-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.3.1",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:09.227768-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.3.1",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:12.708222-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.3.1",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:12.708222-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.3.1",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:12.708225-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.3.1",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      }
+    ],
+    "summary": "30 related alerts likely tied to 'SURICATA TLS invalid record/traffic' from 10.128.0.241 targeting 10.47.3.1 on ports 80."
+  },
+  {
+    "incident_id": "INC-00013",
+    "cluster_id": 13,
+    "start_time": "2018-03-23T14:02:17.004559-06:00",
+    "end_time": "2018-03-23T14:02:54.648781-06:00",
+    "src_ips": [
+      "10.128.0.241"
+    ],
+    "dest_ips": [
+      "10.47.3.1",
+      "10.47.3.20",
+      "10.47.8.20"
+    ],
+    "dest_ports": [
+      80
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 7,
+    "top_signatures": {
+      "ET POLICY Http Client Body contains pass= in cleartext": 5,
+      "ET POLICY Outgoing Basic Auth Base64 HTTP Password detected unencrypted": 2
+    },
+    "max_severity": 1,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:02:17.004559-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.8.20",
+        "signature": "ET POLICY Outgoing Basic Auth Base64 HTTP Password detected unencrypted",
+        "category": "Potential Corporate Privacy Violation",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:02:17.043997-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.3.1",
+        "signature": "ET POLICY Http Client Body contains pass= in cleartext",
+        "category": "Potential Corporate Privacy Violation",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:02:17.045752-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.8.20",
+        "signature": "ET POLICY Http Client Body contains pass= in cleartext",
+        "category": "Potential Corporate Privacy Violation",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:02:50.366957-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.8.20",
+        "signature": "ET POLICY Outgoing Basic Auth Base64 HTTP Password detected unencrypted",
+        "category": "Potential Corporate Privacy Violation",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:02:53.654280-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.3.1",
+        "signature": "ET POLICY Http Client Body contains pass= in cleartext",
+        "category": "Potential Corporate Privacy Violation",
+        "severity": 1
+      }
+    ],
+    "summary": "7 related alerts likely tied to 'ET POLICY Http Client Body contains pass= in cleartext' from 10.128.0.241 targeting 10.47.8.20, 10.47.3.1, 10.47.3.20 on ports 80."
+  },
+  {
+    "incident_id": "INC-00029",
+    "cluster_id": 29,
+    "start_time": "2018-03-23T14:02:32.899380-06:00",
+    "end_time": "2018-03-23T14:03:56.177520-06:00",
+    "src_ips": [
+      "10.47.3.1"
+    ],
+    "dest_ips": [
+      "10.128.0.241"
+    ],
+    "dest_ports": [
+      33399,
+      34797,
+      34951,
+      36775,
+      37371,
+      37821,
+      37903,
+      39335,
+      42429,
+      42827,
+      43413,
+      44123,
+      44691,
+      45395,
+      45771
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 30,
+    "top_signatures": {
+      "SURICATA TLS invalid record/traffic": 15,
+      "SURICATA TLS invalid record version": 15
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:02:32.899380-0600",
+        "src_ip": "10.47.3.1",
+        "dest_ip": "10.128.0.241",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:32.899380-0600",
+        "src_ip": "10.47.3.1",
+        "dest_ip": "10.128.0.241",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:32.899380-0600",
+        "src_ip": "10.47.3.1",
+        "dest_ip": "10.128.0.241",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:32.899380-0600",
+        "src_ip": "10.47.3.1",
+        "dest_ip": "10.128.0.241",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:32.899380-0600",
+        "src_ip": "10.47.3.1",
+        "dest_ip": "10.128.0.241",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      }
+    ],
+    "summary": "30 related alerts likely tied to 'SURICATA TLS invalid record/traffic' from 10.47.3.1 targeting 10.128.0.241 on ports 33399, 34797, 34951, 36775, 37371, 37821, 37903, 39335, 42429, 42827."
+  },
+  {
+    "incident_id": "INC-00002",
+    "cluster_id": 2,
+    "start_time": "2018-03-23T14:02:33.039988-06:00",
+    "end_time": "2018-03-23T14:08:00.362310-06:00",
+    "src_ips": [
+      "10.128.0.201"
+    ],
+    "dest_ips": [
+      "10.47.3.10"
+    ],
+    "dest_ports": [
+      445
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 10,
+    "top_signatures": {
+      "ET POLICY SMB2 Remote AT Scheduled Job Create Request": 10
+    },
+    "max_severity": 2,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:02:33.039988-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY SMB2 Remote AT Scheduled Job Create Request",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:02:33.039992-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY SMB2 Remote AT Scheduled Job Create Request",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:02:46.592656-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY SMB2 Remote AT Scheduled Job Create Request",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:02:46.592660-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY SMB2 Remote AT Scheduled Job Create Request",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:07:22.438942-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY SMB2 Remote AT Scheduled Job Create Request",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      }
+    ],
+    "summary": "10 related alerts likely tied to 'ET POLICY SMB2 Remote AT Scheduled Job Create Request' from 10.128.0.201 targeting 10.47.3.10 on ports 445."
+  },
+  {
+    "incident_id": "INC-00027",
+    "cluster_id": 27,
+    "start_time": "2018-03-23T14:02:33.048093-06:00",
+    "end_time": "2018-03-23T14:08:00.489750-06:00",
+    "src_ips": [
+      "10.47.3.10"
+    ],
+    "dest_ips": [
+      "10.128.0.201"
+    ],
+    "dest_ports": [
+      49054,
+      49064,
+      49408,
+      49418,
+      49428
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 15,
+    "top_signatures": {
+      "ET POLICY SMB Remote AT Scheduled Job Pipe Creation": 15
+    },
+    "max_severity": 2,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:02:33.048093-0600",
+        "src_ip": "10.47.3.10",
+        "dest_ip": "10.128.0.201",
+        "signature": "ET POLICY SMB Remote AT Scheduled Job Pipe Creation",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:02:33.048095-0600",
+        "src_ip": "10.47.3.10",
+        "dest_ip": "10.128.0.201",
+        "signature": "ET POLICY SMB Remote AT Scheduled Job Pipe Creation",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:02:33.097306-0600",
+        "src_ip": "10.47.3.10",
+        "dest_ip": "10.128.0.201",
+        "signature": "ET POLICY SMB Remote AT Scheduled Job Pipe Creation",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:02:46.601684-0600",
+        "src_ip": "10.47.3.10",
+        "dest_ip": "10.128.0.201",
+        "signature": "ET POLICY SMB Remote AT Scheduled Job Pipe Creation",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:02:46.601688-0600",
+        "src_ip": "10.47.3.10",
+        "dest_ip": "10.128.0.201",
+        "signature": "ET POLICY SMB Remote AT Scheduled Job Pipe Creation",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      }
+    ],
+    "summary": "15 related alerts likely tied to 'ET POLICY SMB Remote AT Scheduled Job Pipe Creation' from 10.47.3.10 targeting 10.128.0.201 on ports 49054, 49064, 49408, 49418, 49428."
+  },
+  {
+    "incident_id": "INC-00014",
+    "cluster_id": 14,
+    "start_time": "2018-03-23T14:02:50.783248-06:00",
+    "end_time": "2018-03-23T14:02:50.832211-06:00",
+    "src_ips": [
+      "10.128.0.241"
+    ],
+    "dest_ips": [
+      "10.47.3.1",
+      "10.47.8.20"
+    ],
+    "dest_ports": [
+      80
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 4,
+    "top_signatures": {
+      "ET WEB_SERVER Possible CVE-2014-6271 Attempt in Headers": 2,
+      "ET WEB_SERVER Possible CVE-2014-6271 Attempt": 2
+    },
+    "max_severity": 1,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:02:50.783248-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.3.1",
+        "signature": "ET WEB_SERVER Possible CVE-2014-6271 Attempt in Headers",
+        "category": "Attempted Administrator Privilege Gain",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:02:50.783248-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.3.1",
+        "signature": "ET WEB_SERVER Possible CVE-2014-6271 Attempt",
+        "category": "Attempted Administrator Privilege Gain",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:02:50.832211-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.8.20",
+        "signature": "ET WEB_SERVER Possible CVE-2014-6271 Attempt in Headers",
+        "category": "Attempted Administrator Privilege Gain",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:02:50.832211-0600",
+        "src_ip": "10.128.0.241",
+        "dest_ip": "10.47.8.20",
+        "signature": "ET WEB_SERVER Possible CVE-2014-6271 Attempt",
+        "category": "Attempted Administrator Privilege Gain",
+        "severity": 1
+      }
+    ],
+    "summary": "4 related alerts likely tied to 'ET WEB_SERVER Possible CVE-2014-6271 Attempt in Headers' from 10.128.0.241 targeting 10.47.3.1, 10.47.8.20 on ports 80."
+  },
+  {
+    "incident_id": "INC-00020",
+    "cluster_id": 20,
+    "start_time": "2018-03-23T14:02:51.137449-06:00",
+    "end_time": "2018-03-23T14:03:28.258177-06:00",
+    "src_ips": [
+      "10.155.103.17"
+    ],
+    "dest_ips": [
+      "10.10.1.2",
+      "10.47.1.1",
+      "10.47.1.208"
+    ],
+    "dest_ports": [
+      28869,
+      28870,
+      64327
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 18,
+    "top_signatures": {
+      "SURICATA TLS invalid record/traffic": 9,
+      "SURICATA TLS invalid record version": 9
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:02:51.137449-0600",
+        "src_ip": "10.155.103.17",
+        "dest_ip": "10.47.1.1",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:51.137449-0600",
+        "src_ip": "10.155.103.17",
+        "dest_ip": "10.47.1.1",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:51.137637-0600",
+        "src_ip": "10.155.103.17",
+        "dest_ip": "10.47.1.1",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:51.137637-0600",
+        "src_ip": "10.155.103.17",
+        "dest_ip": "10.47.1.1",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:51.144046-0600",
+        "src_ip": "10.155.103.17",
+        "dest_ip": "10.47.1.1",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      }
+    ],
+    "summary": "18 related alerts likely tied to 'SURICATA TLS invalid record/traffic' from 10.155.103.17 targeting 10.47.1.1, 10.10.1.2, 10.47.1.208 on ports 28869, 28870, 64327."
+  },
+  {
+    "incident_id": "INC-00022",
+    "cluster_id": 22,
+    "start_time": "2018-03-23T14:02:51.141899-06:00",
+    "end_time": "2018-03-23T14:02:51.148780-06:00",
+    "src_ips": [
+      "10.47.1.1"
+    ],
+    "dest_ips": [
+      "10.155.103.17"
+    ],
+    "dest_ports": [
+      33349,
+      37145,
+      43155,
+      46175
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 8,
+    "top_signatures": {
+      "SURICATA TLS invalid record/traffic": 4,
+      "SURICATA TLS invalid record version": 4
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:02:51.141899-0600",
+        "src_ip": "10.47.1.1",
+        "dest_ip": "10.155.103.17",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:51.141899-0600",
+        "src_ip": "10.47.1.1",
+        "dest_ip": "10.155.103.17",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:51.142202-0600",
+        "src_ip": "10.47.1.1",
+        "dest_ip": "10.155.103.17",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:51.142202-0600",
+        "src_ip": "10.47.1.1",
+        "dest_ip": "10.155.103.17",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:02:51.148290-0600",
+        "src_ip": "10.47.1.1",
+        "dest_ip": "10.155.103.17",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      }
+    ],
+    "summary": "8 related alerts likely tied to 'SURICATA TLS invalid record/traffic' from 10.47.1.1 targeting 10.155.103.17 on ports 33349, 37145, 43155, 46175."
+  },
+  {
+    "incident_id": "INC-00000",
+    "cluster_id": 0,
+    "start_time": "2018-03-23T14:03:23.279968-06:00",
+    "end_time": "2018-03-23T14:03:23.286763-06:00",
+    "src_ips": [
+      "10.10.1.2"
+    ],
+    "dest_ips": [
+      "10.155.103.17"
+    ],
+    "dest_ports": [
+      34075,
+      44055,
+      44527,
+      46189
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 8,
+    "top_signatures": {
+      "SURICATA TLS invalid record/traffic": 4,
+      "SURICATA TLS invalid record version": 4
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:03:23.279968-0600",
+        "src_ip": "10.10.1.2",
+        "dest_ip": "10.155.103.17",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:03:23.279968-0600",
+        "src_ip": "10.10.1.2",
+        "dest_ip": "10.155.103.17",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:03:23.280207-0600",
+        "src_ip": "10.10.1.2",
+        "dest_ip": "10.155.103.17",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:03:23.280207-0600",
+        "src_ip": "10.10.1.2",
+        "dest_ip": "10.155.103.17",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:03:23.286400-0600",
+        "src_ip": "10.10.1.2",
+        "dest_ip": "10.155.103.17",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      }
+    ],
+    "summary": "8 related alerts likely tied to 'SURICATA TLS invalid record/traffic' from 10.10.1.2 targeting 10.155.103.17 on ports 34075, 44055, 44527, 46189."
+  },
+  {
+    "incident_id": "INC-00031",
+    "cluster_id": 31,
+    "start_time": "2018-03-23T14:03:36.020473-06:00",
+    "end_time": "2018-03-23T14:03:36.021310-06:00",
+    "src_ips": [
+      "10.47.6.100"
+    ],
+    "dest_ips": [
+      "10.128.0.210"
+    ],
+    "dest_ports": [
+      50760
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 3,
+    "top_signatures": {
+      "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server": 3
+    },
+    "max_severity": 2,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:03:36.020473-0600",
+        "src_ip": "10.47.6.100",
+        "dest_ip": "10.128.0.210",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:03:36.020476-0600",
+        "src_ip": "10.47.6.100",
+        "dest_ip": "10.128.0.210",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:03:36.021310-0600",
+        "src_ip": "10.47.6.100",
+        "dest_ip": "10.128.0.210",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      }
+    ],
+    "summary": "3 related alerts likely tied to 'ET SCAN Non-Allowed Host Tried to Connect to MySQL Server' from 10.47.6.100 targeting 10.128.0.210 on ports 50760."
+  },
+  {
+    "incident_id": "INC-00032",
+    "cluster_id": 32,
+    "start_time": "2018-03-23T14:03:40.524108-06:00",
+    "end_time": "2018-03-23T14:03:40.525405-06:00",
+    "src_ips": [
+      "10.47.6.142"
+    ],
+    "dest_ips": [
+      "10.128.0.210"
+    ],
+    "dest_ports": [
+      34452
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 3,
+    "top_signatures": {
+      "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server": 3
+    },
+    "max_severity": 2,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:03:40.524108-0600",
+        "src_ip": "10.47.6.142",
+        "dest_ip": "10.128.0.210",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:03:40.524111-0600",
+        "src_ip": "10.47.6.142",
+        "dest_ip": "10.128.0.210",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:03:40.525405-0600",
+        "src_ip": "10.47.6.142",
+        "dest_ip": "10.128.0.210",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      }
+    ],
+    "summary": "3 related alerts likely tied to 'ET SCAN Non-Allowed Host Tried to Connect to MySQL Server' from 10.47.6.142 targeting 10.128.0.210 on ports 34452."
+  },
+  {
+    "incident_id": "INC-00008",
+    "cluster_id": 8,
+    "start_time": "2018-03-23T14:04:30.147056-06:00",
+    "end_time": "2018-03-23T14:04:55.738896-06:00",
+    "src_ips": [
+      "10.128.0.215"
+    ],
+    "dest_ips": [
+      "10.47.8.100",
+      "10.47.8.200"
+    ],
+    "dest_ports": [
+      25,
+      902
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 11,
+    "top_signatures": {
+      "SURICATA TLS invalid record/traffic": 4,
+      "SURICATA TLS invalid record version": 4,
+      "SURICATA SMTP tls rejected": 3
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:04:30.147056-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.100",
+        "signature": "SURICATA SMTP tls rejected",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:04:39.540250-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.100",
+        "signature": "SURICATA SMTP tls rejected",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:04:46.873412-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.100",
+        "signature": "SURICATA SMTP tls rejected",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:04:55.557203-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.200",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:04:55.557203-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.200",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      }
+    ],
+    "summary": "11 related alerts likely tied to 'SURICATA TLS invalid record/traffic' from 10.128.0.215 targeting 10.47.8.200, 10.47.8.100 on ports 25, 902."
+  },
+  {
+    "incident_id": "INC-00034",
+    "cluster_id": 34,
+    "start_time": "2018-03-23T14:04:30.249811-06:00",
+    "end_time": "2018-03-23T14:05:48.288894-06:00",
+    "src_ips": [
+      "10.47.8.100"
+    ],
+    "dest_ips": [
+      "10.128.0.215"
+    ],
+    "dest_ports": [
+      51383,
+      51830,
+      51896,
+      52248,
+      52274,
+      52276,
+      52308
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 7,
+    "top_signatures": {
+      "SURICATA HTTP unable to match response to request": 4,
+      "SURICATA SMTP tls rejected": 3
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:04:30.249811-0600",
+        "src_ip": "10.47.8.100",
+        "dest_ip": "10.128.0.215",
+        "signature": "SURICATA SMTP tls rejected",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:04:39.642724-0600",
+        "src_ip": "10.47.8.100",
+        "dest_ip": "10.128.0.215",
+        "signature": "SURICATA SMTP tls rejected",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:04:46.976046-0600",
+        "src_ip": "10.47.8.100",
+        "dest_ip": "10.128.0.215",
+        "signature": "SURICATA SMTP tls rejected",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:05:41.095333-0600",
+        "src_ip": "10.47.8.100",
+        "dest_ip": "10.128.0.215",
+        "signature": "SURICATA HTTP unable to match response to request",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:05:47.320804-0600",
+        "src_ip": "10.47.8.100",
+        "dest_ip": "10.128.0.215",
+        "signature": "SURICATA HTTP unable to match response to request",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      }
+    ],
+    "summary": "7 related alerts likely tied to 'SURICATA HTTP unable to match response to request' from 10.47.8.100 targeting 10.128.0.215 on ports 51383, 51830, 51896, 52248, 52274, 52276, 52308."
+  },
+  {
+    "incident_id": "INC-00039",
+    "cluster_id": 39,
+    "start_time": "2018-03-23T14:04:55.592184-06:00",
+    "end_time": "2018-03-23T14:05:57.595513-06:00",
+    "src_ips": [
+      "10.47.8.200"
+    ],
+    "dest_ips": [
+      "10.128.0.215"
+    ],
+    "dest_ports": [
+      52416,
+      52417,
+      52418,
+      52419
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 8,
+    "top_signatures": {
+      "SURICATA TLS invalid record/traffic": 4,
+      "SURICATA TLS invalid record version": 4
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:04:55.592184-0600",
+        "src_ip": "10.47.8.200",
+        "dest_ip": "10.128.0.215",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:04:55.592184-0600",
+        "src_ip": "10.47.8.200",
+        "dest_ip": "10.128.0.215",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:04:55.746900-0600",
+        "src_ip": "10.47.8.200",
+        "dest_ip": "10.128.0.215",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:04:55.746900-0600",
+        "src_ip": "10.47.8.200",
+        "dest_ip": "10.128.0.215",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:05:57.179343-0600",
+        "src_ip": "10.47.8.200",
+        "dest_ip": "10.128.0.215",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      }
+    ],
+    "summary": "8 related alerts likely tied to 'SURICATA TLS invalid record/traffic' from 10.47.8.200 targeting 10.128.0.215 on ports 52416, 52417, 52418, 52419."
+  },
+  {
+    "incident_id": "INC-00004",
+    "cluster_id": 4,
+    "start_time": "2018-03-23T14:10:04.846394-06:00",
+    "end_time": "2018-03-23T14:12:55.183574-06:00",
+    "src_ips": [
+      "10.128.0.201"
+    ],
+    "dest_ips": [
+      "10.47.3.10"
+    ],
+    "dest_ports": [
+      445
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 12,
+    "top_signatures": {
+      "ET POLICY SMB2 Remote AT Scheduled Job Create Request": 12
+    },
+    "max_severity": 2,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:10:04.846394-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY SMB2 Remote AT Scheduled Job Create Request",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:10:04.846397-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY SMB2 Remote AT Scheduled Job Create Request",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:10:17.441117-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY SMB2 Remote AT Scheduled Job Create Request",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:10:17.441122-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY SMB2 Remote AT Scheduled Job Create Request",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:11:03.737951-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY SMB2 Remote AT Scheduled Job Create Request",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      }
+    ],
+    "summary": "12 related alerts likely tied to 'ET POLICY SMB2 Remote AT Scheduled Job Create Request' from 10.128.0.201 targeting 10.47.3.10 on ports 445."
+  },
+  {
+    "incident_id": "INC-00028",
+    "cluster_id": 28,
+    "start_time": "2018-03-23T14:10:04.855603-06:00",
+    "end_time": "2018-03-23T14:12:55.245139-06:00",
+    "src_ips": [
+      "10.47.3.10"
+    ],
+    "dest_ips": [
+      "10.128.0.201"
+    ],
+    "dest_ports": [
+      49602,
+      49612,
+      49624,
+      49634,
+      49644,
+      49654
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 18,
+    "top_signatures": {
+      "ET POLICY SMB Remote AT Scheduled Job Pipe Creation": 18
+    },
+    "max_severity": 2,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:10:04.855603-0600",
+        "src_ip": "10.47.3.10",
+        "dest_ip": "10.128.0.201",
+        "signature": "ET POLICY SMB Remote AT Scheduled Job Pipe Creation",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:10:04.855608-0600",
+        "src_ip": "10.47.3.10",
+        "dest_ip": "10.128.0.201",
+        "signature": "ET POLICY SMB Remote AT Scheduled Job Pipe Creation",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:10:04.917847-0600",
+        "src_ip": "10.47.3.10",
+        "dest_ip": "10.128.0.201",
+        "signature": "ET POLICY SMB Remote AT Scheduled Job Pipe Creation",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:10:17.450850-0600",
+        "src_ip": "10.47.3.10",
+        "dest_ip": "10.128.0.201",
+        "signature": "ET POLICY SMB Remote AT Scheduled Job Pipe Creation",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:10:17.450855-0600",
+        "src_ip": "10.47.3.10",
+        "dest_ip": "10.128.0.201",
+        "signature": "ET POLICY SMB Remote AT Scheduled Job Pipe Creation",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      }
+    ],
+    "summary": "18 related alerts likely tied to 'ET POLICY SMB Remote AT Scheduled Job Pipe Creation' from 10.47.3.10 targeting 10.128.0.201 on ports 49602, 49612, 49624, 49634, 49644, 49654."
+  },
+  {
+    "incident_id": "INC-00006",
+    "cluster_id": 6,
+    "start_time": "2018-03-23T14:10:24.850434-06:00",
+    "end_time": "2018-03-23T14:14:57.624844-06:00",
+    "src_ips": [
+      "10.128.0.214"
+    ],
+    "dest_ips": [
+      "10.47.1.155",
+      "10.47.1.173",
+      "10.47.1.242",
+      "10.47.1.246",
+      "10.47.1.25",
+      "10.47.1.73",
+      "10.47.4.13"
+    ],
+    "dest_ports": [
+      445
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 7,
+    "top_signatures": {
+      "ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection": 7
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:10:24.850434-0600",
+        "src_ip": "10.128.0.214",
+        "dest_ip": "10.47.1.25",
+        "signature": "ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection",
+        "category": "Misc activity",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:11:25.009758-0600",
+        "src_ip": "10.128.0.214",
+        "dest_ip": "10.47.1.73",
+        "signature": "ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection",
+        "category": "Misc activity",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:12:53.578603-0600",
+        "src_ip": "10.128.0.214",
+        "dest_ip": "10.47.1.173",
+        "signature": "ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection",
+        "category": "Misc activity",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:13:25.074024-0600",
+        "src_ip": "10.128.0.214",
+        "dest_ip": "10.47.1.155",
+        "signature": "ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection",
+        "category": "Misc activity",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:13:53.592312-0600",
+        "src_ip": "10.128.0.214",
+        "dest_ip": "10.47.1.242",
+        "signature": "ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection",
+        "category": "Misc activity",
+        "severity": 3
+      }
+    ],
+    "summary": "7 related alerts likely tied to 'ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection' from 10.128.0.214 targeting 10.47.1.25, 10.47.1.73, 10.47.1.173 on ports 445."
+  },
+  {
+    "incident_id": "INC-00036",
+    "cluster_id": 36,
+    "start_time": "2018-03-23T14:11:11.532471-06:00",
+    "end_time": "2018-03-23T14:11:11.608563-06:00",
+    "src_ips": [
+      "10.47.8.100"
+    ],
+    "dest_ips": [
+      "10.128.0.210"
+    ],
+    "dest_ports": [
+      40626
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 3,
+    "top_signatures": {
+      "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server": 3
+    },
+    "max_severity": 2,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:11:11.532471-0600",
+        "src_ip": "10.47.8.100",
+        "dest_ip": "10.128.0.210",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:11:11.532477-0600",
+        "src_ip": "10.47.8.100",
+        "dest_ip": "10.128.0.210",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:11:11.608563-0600",
+        "src_ip": "10.47.8.100",
+        "dest_ip": "10.128.0.210",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      }
+    ],
+    "summary": "3 related alerts likely tied to 'ET SCAN Non-Allowed Host Tried to Connect to MySQL Server' from 10.47.8.100 targeting 10.128.0.210 on ports 40626."
+  },
+  {
+    "incident_id": "INC-00011",
+    "cluster_id": 11,
+    "start_time": "2018-03-23T14:11:12.384130-06:00",
+    "end_time": "2018-03-23T14:18:18.124611-06:00",
+    "src_ips": [
+      "10.128.0.235"
+    ],
+    "dest_ips": [
+      "10.47.4.150",
+      "10.47.4.151",
+      "10.47.4.152",
+      "10.47.4.153",
+      "10.47.4.154",
+      "10.47.4.217",
+      "10.47.4.218",
+      "10.47.4.232",
+      "10.47.4.244",
+      "10.47.4.255"
+    ],
+    "dest_ports": [
+      80,
+      135,
+      139,
+      443,
+      445,
+      1433,
+      1434,
+      2869,
+      5357,
+      10243
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 401,
+    "top_signatures": {
+      "ET SCAN Possible Nmap User-Agent Observed": 393,
+      "ET SCAN Behavioral Unusual Port 445 traffic Potential Scan or Infection": 4,
+      "ET SCAN Behavioral Unusual Port 139 traffic Potential Scan or Infection": 1
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:11:12.384130-0600",
+        "src_ip": "10.128.0.235",
+        "dest_ip": "10.47.4.153",
+        "signature": "ET SCAN Possible Nmap User-Agent Observed",
+        "category": "Web Application Attack",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:11:12.490695-0600",
+        "src_ip": "10.128.0.235",
+        "dest_ip": "10.47.4.150",
+        "signature": "ET SCAN Possible Nmap User-Agent Observed",
+        "category": "Web Application Attack",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:11:12.497256-0600",
+        "src_ip": "10.128.0.235",
+        "dest_ip": "10.47.4.150",
+        "signature": "ET SCAN Possible Nmap User-Agent Observed",
+        "category": "Web Application Attack",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:11:12.500448-0600",
+        "src_ip": "10.128.0.235",
+        "dest_ip": "10.47.4.150",
+        "signature": "ET SCAN Possible Nmap User-Agent Observed",
+        "category": "Web Application Attack",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:11:12.501903-0600",
+        "src_ip": "10.128.0.235",
+        "dest_ip": "10.47.4.150",
+        "signature": "ET SCAN Possible Nmap User-Agent Observed",
+        "category": "Web Application Attack",
+        "severity": 1
+      }
+    ],
+    "summary": "401 related alerts likely tied to 'ET SCAN Possible Nmap User-Agent Observed' from 10.128.0.235 targeting 10.47.4.154, 10.47.4.151, 10.47.4.153 on ports 80, 135, 139, 443, 445, 1433, 1434, 2869, 5357, 10243."
+  },
+  {
+    "incident_id": "INC-00038",
+    "cluster_id": 38,
+    "start_time": "2018-03-23T14:11:16.113095-06:00",
+    "end_time": "2018-03-23T14:11:16.114997-06:00",
+    "src_ips": [
+      "10.47.8.142"
+    ],
+    "dest_ips": [
+      "10.128.0.210"
+    ],
+    "dest_ports": [
+      38456
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 3,
+    "top_signatures": {
+      "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server": 3
+    },
+    "max_severity": 2,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:11:16.113095-0600",
+        "src_ip": "10.47.8.142",
+        "dest_ip": "10.128.0.210",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:11:16.113099-0600",
+        "src_ip": "10.47.8.142",
+        "dest_ip": "10.128.0.210",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:11:16.114997-0600",
+        "src_ip": "10.47.8.142",
+        "dest_ip": "10.128.0.210",
+        "signature": "ET SCAN Non-Allowed Host Tried to Connect to MySQL Server",
+        "category": "Attempted Information Leak",
+        "severity": 2
+      }
+    ],
+    "summary": "3 related alerts likely tied to 'ET SCAN Non-Allowed Host Tried to Connect to MySQL Server' from 10.47.8.142 targeting 10.128.0.210 on ports 38456."
+  },
+  {
+    "incident_id": "INC-00030",
+    "cluster_id": 30,
+    "start_time": "2018-03-23T14:11:49.667016-06:00",
+    "end_time": "2018-03-23T14:11:50.222093-06:00",
+    "src_ips": [
+      "10.47.5.100"
+    ],
+    "dest_ips": [
+      "128.30.2.26"
+    ],
+    "dest_ports": [
+      80
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 3,
+    "top_signatures": {
+      "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management": 3
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:11:49.667016-0600",
+        "src_ip": "10.47.5.100",
+        "dest_ip": "128.30.2.26",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:11:49.818819-0600",
+        "src_ip": "10.47.5.100",
+        "dest_ip": "128.30.2.26",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:11:50.222093-0600",
+        "src_ip": "10.47.5.100",
+        "dest_ip": "128.30.2.26",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      }
+    ],
+    "summary": "3 related alerts likely tied to 'ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management' from 10.47.5.100 targeting 128.30.2.26 on ports 80."
+  },
+  {
+    "incident_id": "INC-00018",
+    "cluster_id": 18,
+    "start_time": "2018-03-23T14:12:52.563826-06:00",
+    "end_time": "2018-03-23T14:16:20.307039-06:00",
+    "src_ips": [
+      "10.128.0.244"
+    ],
+    "dest_ips": [
+      "10.47.1.58",
+      "10.47.5.58"
+    ],
+    "dest_ports": [
+      80
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 3,
+    "top_signatures": {
+      "ET POLICY Outgoing Basic Auth Base64 HTTP Password detected unencrypted": 3
+    },
+    "max_severity": 1,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:12:52.563826-0600",
+        "src_ip": "10.128.0.244",
+        "dest_ip": "10.47.5.58",
+        "signature": "ET POLICY Outgoing Basic Auth Base64 HTTP Password detected unencrypted",
+        "category": "Potential Corporate Privacy Violation",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:14:08.214331-0600",
+        "src_ip": "10.128.0.244",
+        "dest_ip": "10.47.1.58",
+        "signature": "ET POLICY Outgoing Basic Auth Base64 HTTP Password detected unencrypted",
+        "category": "Potential Corporate Privacy Violation",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:16:20.307039-0600",
+        "src_ip": "10.128.0.244",
+        "dest_ip": "10.47.1.58",
+        "signature": "ET POLICY Outgoing Basic Auth Base64 HTTP Password detected unencrypted",
+        "category": "Potential Corporate Privacy Violation",
+        "severity": 1
+      }
+    ],
+    "summary": "3 related alerts likely tied to 'ET POLICY Outgoing Basic Auth Base64 HTTP Password detected unencrypted' from 10.128.0.244 targeting 10.47.1.58, 10.47.5.58 on ports 80."
+  },
+  {
+    "incident_id": "INC-00021",
+    "cluster_id": 21,
+    "start_time": "2018-03-23T14:12:56.536903-06:00",
+    "end_time": "2018-03-23T14:13:24.034748-06:00",
+    "src_ips": [
+      "10.47.1.153"
+    ],
+    "dest_ips": [
+      "91.189.88.149",
+      "91.189.91.23",
+      "91.189.91.26",
+      "91.189.92.152"
+    ],
+    "dest_ports": [
+      80
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 106,
+    "top_signatures": {
+      "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management": 106
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:12:56.536903-0600",
+        "src_ip": "10.47.1.153",
+        "dest_ip": "91.189.91.26",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:13:11.131651-0600",
+        "src_ip": "10.47.1.153",
+        "dest_ip": "91.189.91.23",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:13:22.007932-0600",
+        "src_ip": "10.47.1.153",
+        "dest_ip": "91.189.91.26",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:13:22.007932-0600",
+        "src_ip": "10.47.1.153",
+        "dest_ip": "91.189.91.26",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:13:22.007932-0600",
+        "src_ip": "10.47.1.153",
+        "dest_ip": "91.189.91.26",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      }
+    ],
+    "summary": "106 related alerts likely tied to 'ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management' from 10.47.1.153 targeting 91.189.91.26, 91.189.88.149, 91.189.92.152 on ports 80."
+  },
+  {
+    "incident_id": "INC-00025",
+    "cluster_id": 25,
+    "start_time": "2018-03-23T14:15:46.355554-06:00",
+    "end_time": "2018-03-23T14:15:46.378263-06:00",
+    "src_ips": [
+      "10.47.1.58"
+    ],
+    "dest_ips": [
+      "10.0.0.251"
+    ],
+    "dest_ports": [
+      58427,
+      58545,
+      58546,
+      58547,
+      58561,
+      58562
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 6,
+    "top_signatures": {
+      "SURICATA HTTP unable to match response to request": 6
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:15:46.355554-0600",
+        "src_ip": "10.47.1.58",
+        "dest_ip": "10.0.0.251",
+        "signature": "SURICATA HTTP unable to match response to request",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:15:46.360816-0600",
+        "src_ip": "10.47.1.58",
+        "dest_ip": "10.0.0.251",
+        "signature": "SURICATA HTTP unable to match response to request",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:15:46.365039-0600",
+        "src_ip": "10.47.1.58",
+        "dest_ip": "10.0.0.251",
+        "signature": "SURICATA HTTP unable to match response to request",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:15:46.369699-0600",
+        "src_ip": "10.47.1.58",
+        "dest_ip": "10.0.0.251",
+        "signature": "SURICATA HTTP unable to match response to request",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:15:46.373876-0600",
+        "src_ip": "10.47.1.58",
+        "dest_ip": "10.0.0.251",
+        "signature": "SURICATA HTTP unable to match response to request",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      }
+    ],
+    "summary": "6 related alerts likely tied to 'SURICATA HTTP unable to match response to request' from 10.47.1.58 targeting 10.0.0.251 on ports 58427, 58545, 58546, 58547, 58561, 58562."
+  },
+  {
+    "incident_id": "INC-00003",
+    "cluster_id": 3,
+    "start_time": "2018-03-23T14:16:59.988004-06:00",
+    "end_time": "2018-03-23T14:16:59.992098-06:00",
+    "src_ips": [
+      "10.128.0.201"
+    ],
+    "dest_ips": [
+      "10.47.3.10"
+    ],
+    "dest_ports": [
+      445
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 12,
+    "top_signatures": {
+      "ET POLICY Powershell Activity Over SMB - Likely Lateral Movement": 3,
+      "ET POLICY Powershell Command With Hidden Window Argument Over SMB - Likely Lateral Movement": 3,
+      "ET POLICY Powershell Command With No Profile Argument Over SMB - Likely Lateral Movement": 3
+    },
+    "max_severity": 1,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:16:59.988004-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY Powershell Activity Over SMB - Likely Lateral Movement",
+        "category": "A Network Trojan was detected",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:16:59.988004-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY Powershell Command With Hidden Window Argument Over SMB - Likely Lateral Movement",
+        "category": "A Network Trojan was detected",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:16:59.988004-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY Powershell Command With No Profile Argument Over SMB - Likely Lateral Movement",
+        "category": "A Network Trojan was detected",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:16:59.988004-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY Powershell Command With NonInteractive Argument Over SMB - Likely Lateral Movement",
+        "category": "A Network Trojan was detected",
+        "severity": 1
+      },
+      {
+        "timestamp": "2018-03-23T14:16:59.988006-0600",
+        "src_ip": "10.128.0.201",
+        "dest_ip": "10.47.3.10",
+        "signature": "ET POLICY Powershell Activity Over SMB - Likely Lateral Movement",
+        "category": "A Network Trojan was detected",
+        "severity": 1
+      }
+    ],
+    "summary": "12 related alerts likely tied to 'ET POLICY Powershell Activity Over SMB - Likely Lateral Movement' from 10.128.0.201 targeting 10.47.3.10 on ports 445."
+  },
+  {
+    "incident_id": "INC-00009",
+    "cluster_id": 9,
+    "start_time": "2018-03-23T14:17:08.695280-06:00",
+    "end_time": "2018-03-23T14:19:58.733329-06:00",
+    "src_ips": [
+      "10.128.0.215"
+    ],
+    "dest_ips": [
+      "10.47.8.153",
+      "10.47.8.208"
+    ],
+    "dest_ports": [
+      445
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 1575,
+    "top_signatures": {
+      "ET POLICY SMB2 NT Create AndX Request For a DLL File - Possible Lateral Movement": 1271,
+      "ET POLICY SMB2 NT Create AndX Request For an Executable File": 304
+    },
+    "max_severity": 2,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:17:08.695280-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.208",
+        "signature": "ET POLICY SMB2 NT Create AndX Request For a DLL File - Possible Lateral Movement",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:17:08.695283-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.208",
+        "signature": "ET POLICY SMB2 NT Create AndX Request For a DLL File - Possible Lateral Movement",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:17:13.531114-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.208",
+        "signature": "ET POLICY SMB2 NT Create AndX Request For a DLL File - Possible Lateral Movement",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:17:13.531118-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.208",
+        "signature": "ET POLICY SMB2 NT Create AndX Request For a DLL File - Possible Lateral Movement",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      },
+      {
+        "timestamp": "2018-03-23T14:17:25.149199-0600",
+        "src_ip": "10.128.0.215",
+        "dest_ip": "10.47.8.208",
+        "signature": "ET POLICY SMB2 NT Create AndX Request For a DLL File - Possible Lateral Movement",
+        "category": "Potentially Bad Traffic",
+        "severity": 2
+      }
+    ],
+    "summary": "1575 related alerts likely tied to 'ET POLICY SMB2 NT Create AndX Request For a DLL File - Possible Lateral Movement' from 10.128.0.215 targeting 10.47.8.153, 10.47.8.208 on ports 445."
+  },
+  {
+    "incident_id": "INC-00033",
+    "cluster_id": 33,
+    "start_time": "2018-03-23T14:17:55.098805-06:00",
+    "end_time": "2018-03-23T14:19:56.360182-06:00",
+    "src_ips": [
+      "10.47.6.154"
+    ],
+    "dest_ips": [
+      "91.189.88.149",
+      "91.189.91.23",
+      "91.189.91.26",
+      "91.189.92.152"
+    ],
+    "dest_ports": [
+      80
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 1693,
+    "top_signatures": {
+      "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management": 1693
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:17:55.098805-0600",
+        "src_ip": "10.47.6.154",
+        "dest_ip": "91.189.91.26",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:17:55.098805-0600",
+        "src_ip": "10.47.6.154",
+        "dest_ip": "91.189.91.26",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:17:55.098805-0600",
+        "src_ip": "10.47.6.154",
+        "dest_ip": "91.189.91.26",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:17:55.192741-0600",
+        "src_ip": "10.47.6.154",
+        "dest_ip": "91.189.91.26",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:17:55.192741-0600",
+        "src_ip": "10.47.6.154",
+        "dest_ip": "91.189.91.26",
+        "signature": "ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management",
+        "category": "Not Suspicious Traffic",
+        "severity": 3
+      }
+    ],
+    "summary": "1693 related alerts likely tied to 'ET POLICY GNU/Linux APT User-Agent Outbound likely related to package management' from 10.47.6.154 targeting 91.189.91.23, 91.189.91.26, 91.189.88.149 on ports 80."
+  },
+  {
+    "incident_id": "INC-00019",
+    "cluster_id": 19,
+    "start_time": "2018-03-23T14:18:35.012017-06:00",
+    "end_time": "2018-03-23T14:18:46.062016-06:00",
+    "src_ips": [
+      "10.147.198.79"
+    ],
+    "dest_ips": [
+      "10.10.1.2",
+      "10.47.1.1"
+    ],
+    "dest_ports": [
+      28869,
+      28870
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 16,
+    "top_signatures": {
+      "SURICATA TLS invalid record/traffic": 8,
+      "SURICATA TLS invalid record version": 8
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:18:35.012017-0600",
+        "src_ip": "10.147.198.79",
+        "dest_ip": "10.47.1.1",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:18:35.012017-0600",
+        "src_ip": "10.147.198.79",
+        "dest_ip": "10.47.1.1",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:18:35.012307-0600",
+        "src_ip": "10.147.198.79",
+        "dest_ip": "10.47.1.1",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:18:35.012307-0600",
+        "src_ip": "10.147.198.79",
+        "dest_ip": "10.47.1.1",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:18:35.017847-0600",
+        "src_ip": "10.147.198.79",
+        "dest_ip": "10.47.1.1",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      }
+    ],
+    "summary": "16 related alerts likely tied to 'SURICATA TLS invalid record/traffic' from 10.147.198.79 targeting 10.47.1.1, 10.10.1.2 on ports 28869, 28870."
+  },
+  {
+    "incident_id": "INC-00023",
+    "cluster_id": 23,
+    "start_time": "2018-03-23T14:18:35.015451-06:00",
+    "end_time": "2018-03-23T14:18:35.022139-06:00",
+    "src_ips": [
+      "10.47.1.1"
+    ],
+    "dest_ips": [
+      "10.147.198.79"
+    ],
+    "dest_ports": [
+      34171,
+      35111,
+      38111,
+      43167
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 8,
+    "top_signatures": {
+      "SURICATA TLS invalid record/traffic": 4,
+      "SURICATA TLS invalid record version": 4
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:18:35.015451-0600",
+        "src_ip": "10.47.1.1",
+        "dest_ip": "10.147.198.79",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:18:35.015451-0600",
+        "src_ip": "10.47.1.1",
+        "dest_ip": "10.147.198.79",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:18:35.015802-0600",
+        "src_ip": "10.47.1.1",
+        "dest_ip": "10.147.198.79",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:18:35.015802-0600",
+        "src_ip": "10.47.1.1",
+        "dest_ip": "10.147.198.79",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:18:35.020103-0600",
+        "src_ip": "10.47.1.1",
+        "dest_ip": "10.147.198.79",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      }
+    ],
+    "summary": "8 related alerts likely tied to 'SURICATA TLS invalid record/traffic' from 10.47.1.1 targeting 10.147.198.79 on ports 34171, 35111, 38111, 43167."
+  },
+  {
+    "incident_id": "INC-00001",
+    "cluster_id": 1,
+    "start_time": "2018-03-23T14:18:46.054771-06:00",
+    "end_time": "2018-03-23T14:18:46.064045-06:00",
+    "src_ips": [
+      "10.10.1.2"
+    ],
+    "dest_ips": [
+      "10.147.198.79"
+    ],
+    "dest_ports": [
+      37311,
+      39633,
+      41159,
+      45759
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 8,
+    "top_signatures": {
+      "SURICATA TLS invalid record/traffic": 4,
+      "SURICATA TLS invalid record version": 4
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:18:46.054771-0600",
+        "src_ip": "10.10.1.2",
+        "dest_ip": "10.147.198.79",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:18:46.054771-0600",
+        "src_ip": "10.10.1.2",
+        "dest_ip": "10.147.198.79",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:18:46.059655-0600",
+        "src_ip": "10.10.1.2",
+        "dest_ip": "10.147.198.79",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:18:46.059655-0600",
+        "src_ip": "10.10.1.2",
+        "dest_ip": "10.147.198.79",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:18:46.060057-0600",
+        "src_ip": "10.10.1.2",
+        "dest_ip": "10.147.198.79",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      }
+    ],
+    "summary": "8 related alerts likely tied to 'SURICATA TLS invalid record/traffic' from 10.10.1.2 targeting 10.147.198.79 on ports 37311, 39633, 41159, 45759."
+  },
+  {
+    "incident_id": "INC-00010",
+    "cluster_id": 10,
+    "start_time": "2018-03-23T14:19:50.995816-06:00",
+    "end_time": "2018-03-23T14:19:55.801339-06:00",
+    "src_ips": [
+      "10.128.0.221"
+    ],
+    "dest_ips": [
+      "10.47.1.200",
+      "10.47.1.59"
+    ],
+    "dest_ports": [
+      902,
+      8080
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 11,
+    "top_signatures": {
+      "SURICATA TLS invalid record/traffic": 4,
+      "SURICATA TLS invalid record version": 4,
+      "SURICATA HTTP Host header ambiguous": 1
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:19:50.995816-0600",
+        "src_ip": "10.128.0.221",
+        "dest_ip": "10.47.1.59",
+        "signature": "SURICATA HTTP Host header ambiguous",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:19:50.995816-0600",
+        "src_ip": "10.128.0.221",
+        "dest_ip": "10.47.1.59",
+        "signature": "SURICATA HTTP Host part of URI is invalid",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:19:53.055572-0600",
+        "src_ip": "10.128.0.221",
+        "dest_ip": "10.47.1.200",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:19:53.055572-0600",
+        "src_ip": "10.128.0.221",
+        "dest_ip": "10.47.1.200",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:19:53.093485-0600",
+        "src_ip": "10.128.0.221",
+        "dest_ip": "10.47.1.200",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      }
+    ],
+    "summary": "11 related alerts likely tied to 'SURICATA TLS invalid record/traffic' from 10.128.0.221 targeting 10.47.1.200, 10.47.1.59 on ports 902, 8080."
+  },
+  {
+    "incident_id": "INC-00024",
+    "cluster_id": 24,
+    "start_time": "2018-03-23T14:19:53.063436-06:00",
+    "end_time": "2018-03-23T14:19:53.176194-06:00",
+    "src_ips": [
+      "10.47.1.200"
+    ],
+    "dest_ips": [
+      "10.128.0.221"
+    ],
+    "dest_ports": [
+      40688,
+      40716,
+      40730,
+      40750
+    ],
+    "proto": [
+      "TCP"
+    ],
+    "alert_count": 8,
+    "top_signatures": {
+      "SURICATA TLS invalid record/traffic": 4,
+      "SURICATA TLS invalid record version": 4
+    },
+    "max_severity": 3,
+    "representative_alerts": [
+      {
+        "timestamp": "2018-03-23T14:19:53.063436-0600",
+        "src_ip": "10.47.1.200",
+        "dest_ip": "10.128.0.221",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:19:53.063436-0600",
+        "src_ip": "10.47.1.200",
+        "dest_ip": "10.128.0.221",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:19:53.093613-0600",
+        "src_ip": "10.47.1.200",
+        "dest_ip": "10.128.0.221",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:19:53.093613-0600",
+        "src_ip": "10.47.1.200",
+        "dest_ip": "10.128.0.221",
+        "signature": "SURICATA TLS invalid record version",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      },
+      {
+        "timestamp": "2018-03-23T14:19:53.143381-0600",
+        "src_ip": "10.47.1.200",
+        "dest_ip": "10.128.0.221",
+        "signature": "SURICATA TLS invalid record/traffic",
+        "category": "Generic Protocol Command Decode",
+        "severity": 3
+      }
+    ],
+    "summary": "8 related alerts likely tied to 'SURICATA TLS invalid record/traffic' from 10.47.1.200 targeting 10.128.0.221 on ports 40688, 40716, 40730, 40750."
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "total_alerts": 4976,
+  "clustered_alerts": 4962,
+  "noise_alerts": 14,
+  "incidents": 39,
+  "reduction_ratio_alerts_per_incident": 127.58974358974359,
+  "params": {
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "eps": 0.25,
+    "min_samples": 3
+  }
+}
