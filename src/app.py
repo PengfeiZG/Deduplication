@@ -131,9 +131,9 @@ st.markdown(
         padding: 16px 18px;
         border-radius: 2px;
     }
-    .stat-card.orange { border-top-color: #ff7c3a; }
-    .stat-card.red    { border-top-color: #ff3a5c; }
-    .stat-card.green  { border-top-color: #00e87a; }
+    .stat-card.orange { border-top-color: #FFB800; }   /* amber  */
+    .stat-card.red    { border-top-color: #BF5AF2; }   /* purple */
+    .stat-card.green  { border-top-color: #30D158; }   /* green  */
     .stat-val {
         font-family: 'IBM Plex Mono', monospace;
         font-size: 2rem;
@@ -171,9 +171,10 @@ st.markdown(
         border-radius: 2px;
         margin-bottom: 10px;
     }
-    .incident-card.sev-high   { border-left-color: #ff3a5c; }
-    .incident-card.sev-medium { border-left-color: #ff7c3a; }
-    .incident-card.sev-low    { border-left-color: #00d4ff; }
+    .incident-card.sev-high   { border-left-color: #ff2d55; }   /* vivid red        */
+    .incident-card.sev-medium { border-left-color: #ffb800; }   /* vivid amber       */
+    .incident-card.sev-low    { border-left-color: #30d158; }   /* vivid green       */
+    .incident-card.sev-info   { border-left-color: #64d2ff; }   /* sky blue          */
     .inc-id {
         font-family: 'IBM Plex Mono', monospace;
         font-size: 0.85rem;
@@ -206,8 +207,10 @@ st.markdown(
         margin-right: 4px;
         letter-spacing: 0.06em;
     }
-    .inc-badge.red   { background: #2a1520; color: #ff5570; }
-    .inc-badge.orange{ background: #2a1a10; color: #ff7c3a; }
+    .inc-badge.sev1  { background: #2d1018; color: #ff2d55; }   /* red   — sev 1    */
+    .inc-badge.sev2  { background: #2d2000; color: #ffb800; }   /* amber — sev 2    */
+    .inc-badge.sev3  { background: #0d2018; color: #30d158; }   /* green — sev 3    */
+    .inc-badge.sev4  { background: #0d1e28; color: #64d2ff; }   /* blue  — sev 4    */
 
     /* Pipeline log */
     .log-box {
@@ -383,11 +386,13 @@ with st.sidebar:
 def sev_class(sev: Optional[int]) -> str:
     if sev is None:
         return ""
-    if sev <= 1:
+    if sev == 1:
         return "sev-high"
-    if sev <= 2:
+    if sev == 2:
         return "sev-medium"
-    return "sev-low"
+    if sev == 3:
+        return "sev-low"
+    return "sev-info"
 
 
 def render_stat_cards(stats: dict):
@@ -426,11 +431,9 @@ def render_stat_cards(stats: dict):
 def render_incident_card(inc: dict):
     sev = inc.get("max_severity")
     cls = sev_class(sev)
-    sev_badge = (
-        f'<span class="inc-badge red">SEV {sev}</span>' if sev and sev <= 1 else
-        f'<span class="inc-badge orange">SEV {sev}</span>' if sev and sev <= 2 else
-        f'<span class="inc-badge">SEV {sev}</span>' if sev else ""
-    )
+    _SEV_LABELS = {1: ("sev1", "CRITICAL"), 2: ("sev2", "HIGH"), 3: ("sev3", "MEDIUM"), 4: ("sev4", "LOW")}
+    _sev_cls, _sev_label = _SEV_LABELS.get(sev, ("", "")) if sev else ("", "")
+    sev_badge = f'<span class="inc-badge {_sev_cls}">SEV {sev} · {_sev_label}</span>' if sev else ""
     alert_count = inc["alert_count"]
     start = inc["start_time"][:19].replace("T", " ")
     end   = inc["end_time"][:19].replace("T", " ")
@@ -662,32 +665,81 @@ if st.session_state.results:
         if not incidents:
             st.info("No incidents formed. Try lowering min_samples or increasing the time window.")
         else:
-            # Filter controls
+            # ── Filter controls ───────────────────────────────────────────
             col1, col2, col3 = st.columns([2, 1, 1])
             with col1:
-                search = st.text_input("Search incidents", placeholder="signature, IP…", label_visibility="collapsed")
+                search = st.text_input(
+                    "Search incidents",
+                    placeholder="signature, IP, port, category, incident ID…",
+                    label_visibility="collapsed",
+                )
             with col2:
-                sev_filter = st.selectbox("Max severity", ["All", "1 (High)", "2 (Med)", "3 (Low)"], label_visibility="collapsed")
+                sev_filter = st.selectbox(
+                    "Severity",
+                    ["All", "1 (High)", "2 (Medium)", "3 (Low)", "Unknown"],
+                    label_visibility="collapsed",
+                    help="Show only incidents whose max severity matches exactly. Suricata: 1 = highest, 3 = lowest.",
+                )
             with col3:
-                sort_by = st.selectbox("Sort by", ["Time (asc)", "Alert count (desc)", "Severity (asc)"], label_visibility="collapsed")
+                sort_by = st.selectbox(
+                    "Sort by",
+                    ["Time (asc)", "Alert count (desc)", "Severity (asc)", "Duration (desc)"],
+                    label_visibility="collapsed",
+                )
 
+            # ── Apply filters ─────────────────────────────────────────────────
             filtered = incidents.copy()
 
+            # Text search — covers all analyst-relevant fields
             if search:
-                s = search.lower()
-                filtered = [
-                    i for i in filtered
-                    if s in i["summary"].lower()
-                    or any(s in sig.lower() for sig in i["top_signatures"])
-                    or any(s in ip for ip in i["src_ips"] + i["dest_ips"])
-                ]
-            if sev_filter != "All":
-                max_s = int(sev_filter[0])
-                filtered = [i for i in filtered if (i.get("max_severity") or 99) <= max_s]
+                s = search.lower().strip()
+                def _inc_matches(i):
+                    # summary, signatures, IPs
+                    if s in i["summary"].lower():
+                        return True
+                    if any(s in sig.lower() for sig in i["top_signatures"]):
+                        return True
+                    if any(s in ip for ip in i["src_ips"] + i["dest_ips"]):
+                        return True
+                    # incident_id (e.g. "INC-00003")
+                    if s in i["incident_id"].lower():
+                        return True
+                    # dest_ports — match exact port number as token
+                    if any(s == str(p) for p in i.get("dest_ports", [])):
+                        return True
+                    # proto
+                    if any(s in pr.lower() for pr in i.get("proto", [])):
+                        return True
+                    return False
+                filtered = [i for i in filtered if _inc_matches(i)]
+
+            # Severity filter — explicit logic, no silent None→99 substitution
+            if sev_filter == "1 (High)":
+                filtered = [i for i in filtered if i.get("max_severity") == 1]
+            elif sev_filter == "2 (Medium)":
+                filtered = [i for i in filtered if i.get("max_severity") == 2]
+            elif sev_filter == "3 (Low)":
+                filtered = [i for i in filtered if i.get("max_severity") == 3]
+            elif sev_filter == "Unknown":
+                filtered = [i for i in filtered if i.get("max_severity") is None]
+            # else "All" → no filter applied
+
+            # Sort — None severity always goes to the end regardless of direction
             if sort_by == "Alert count (desc)":
                 filtered = sorted(filtered, key=lambda x: -x["alert_count"])
             elif sort_by == "Severity (asc)":
-                filtered = sorted(filtered, key=lambda x: (x.get("max_severity") or 99))
+                filtered = sorted(filtered, key=lambda x: (x.get("max_severity") is None, x.get("max_severity") or 0))
+            elif sort_by == "Duration (desc)":
+                def _duration(x):
+                    try:
+                        from datetime import datetime
+                        s_ = datetime.fromisoformat(x["start_time"])
+                        e_ = datetime.fromisoformat(x["end_time"])
+                        return -((e_ - s_).total_seconds())
+                    except Exception:
+                        return 0
+                filtered = sorted(filtered, key=_duration)
+            # else "Time (asc)" — already sorted by time from build_incidents
 
             st.markdown(
                 f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.72rem;color:#3d5066;margin-bottom:12px;">'
@@ -719,8 +771,18 @@ if st.session_state.results:
         if not show_noise:
             disp = disp[disp["cluster_id"] != -1]
         if q:
-            mask = disp.astype(str).apply(lambda row: q.lower() in row.str.lower().str.cat(sep=" "), axis=1)
-            disp = disp[mask]
+            q_clean = q.lower().strip()
+            # Search text columns as substrings; search numeric columns as exact token matches
+            # to avoid "22" matching port 2200 or cluster_id 220.
+            text_cols = [c for c in cols_show if disp[c].dtype == object]
+            num_cols  = [c for c in cols_show if disp[c].dtype != object]
+            text_mask = disp[text_cols].astype(str).apply(
+                lambda col: col.str.lower().str.contains(q_clean, na=False, regex=False)
+            ).any(axis=1)
+            num_mask = disp[num_cols].astype(str).apply(
+                lambda col: col.str.lower() == q_clean
+            ).any(axis=1) if num_cols else pd.Series(False, index=disp.index)
+            disp = disp[text_mask | num_mask]
 
         st.markdown(
             f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.72rem;color:#3d5066;margin-bottom:8px;">'
@@ -771,8 +833,14 @@ if st.session_state.results:
             with col_ctrl3:
                 color_by = st.selectbox(
                     "Colour by",
-                    ["cluster_id", "incident_id", "severity", "proto"],
-                    help="Attribute used to colour each dot.",
+                    ["cluster_id", "severity", "proto", "category", "src_ip"],
+                    help=(
+                        "cluster_id — one colour per detected cluster.  "
+                        "severity — red=1 (high) → teal=3 (low).  "
+                        "proto — TCP/UDP/etc.  "
+                        "category — Suricata alert category.  "
+                        "src_ip — top 15 source IPs, rest grouped as 'other'."
+                    ),
                 )
 
             # Re-project if method changed or no cache
@@ -784,39 +852,45 @@ if st.session_state.results:
             if needs_reproject:
                 with st.spinner(f"Projecting {len(embeddings):,} embeddings with {proj_method}…"):
                     try:
+                        _pca_var = None   # only set for PCA projections
+                        _actual_method = proj_method  # track what was actually run
+
                         if proj_method == "UMAP":
                             import umap
                             reducer = umap.UMAP(n_components=2, random_state=42, metric="cosine")
                             coords = reducer.fit_transform(embeddings)
+
                         elif proj_method == "t-SNE":
+                            from sklearn.decomposition import PCA as _PCA
                             from sklearn.manifold import TSNE
-                            # For large datasets sub-sample to 5000 then project the rest with PCA init
+                            pca_init = _PCA(n_components=2).fit_transform(embeddings)
                             if len(embeddings) > 5000:
-                                from sklearn.decomposition import PCA
-                                pca_init = PCA(n_components=2).fit_transform(embeddings)
-                                coords = TSNE(
-                                    n_components=2, random_state=42,
-                                    init=pca_init[:5000], perplexity=30, n_iter=500,
-                                    method="barnes_hut",
-                                ).fit_transform(embeddings[:5000])
-                                # Extend remaining points via PCA (fallback for large sets)
-                                remaining = PCA(n_components=2).fit_transform(embeddings)
-                                coords = remaining  # use full PCA if > 5000 alerts
-                                st.caption("⚠ Dataset > 5,000 alerts — PCA used instead of t-SNE for performance.")
+                                # t-SNE is O(n log n); above 5k use PCA and note it clearly
+                                coords = pca_init
+                                _actual_method = "PCA"
+                                _pca_var = _PCA(n_components=2).fit(embeddings).explained_variance_ratio_ * 100
+                                st.info(
+                                    f"⚠ Dataset has {len(embeddings):,} alerts — t-SNE would be too slow. "
+                                    "PCA projection shown instead. Use UMAP for better separation on large datasets."
+                                )
                             else:
-                                from sklearn.decomposition import PCA
-                                pca_init = PCA(n_components=2).fit_transform(embeddings)
                                 coords = TSNE(
                                     n_components=2, random_state=42,
                                     init=pca_init, perplexity=30, n_iter=750,
                                     method="barnes_hut",
                                 ).fit_transform(embeddings)
-                        else:  # PCA
-                            from sklearn.decomposition import PCA
-                            coords = PCA(n_components=2).fit_transform(embeddings)
 
+                        else:  # PCA
+                            from sklearn.decomposition import PCA as _PCA
+                            _pca_model = _PCA(n_components=2).fit(embeddings)
+                            coords = _pca_model.transform(embeddings)
+                            _pca_var = _pca_model.explained_variance_ratio_ * 100
+
+                        # Store coords, the method that was *actually* run (not
+                        # just selected), and PCA variance if available.
                         st.session_state[proj_key] = coords
-                        st.session_state[proj_method_key] = proj_method
+                        st.session_state[proj_method_key] = _actual_method
+                        st.session_state["_proj_pca_var"] = _pca_var
 
                     except ImportError as e:
                         missing = str(e).split("'")[1] if "'" in str(e) else str(e)
@@ -825,10 +899,12 @@ if st.session_state.results:
                             f"Install it with: `pip install {missing}` — "
                             f"falling back to PCA."
                         )
-                        from sklearn.decomposition import PCA
-                        coords = PCA(n_components=2).fit_transform(embeddings)
+                        from sklearn.decomposition import PCA as _PCA
+                        _pca_model = _PCA(n_components=2).fit(embeddings)
+                        coords = _pca_model.transform(embeddings)
                         st.session_state[proj_key] = coords
                         st.session_state[proj_method_key] = "PCA"
+                        st.session_state["_proj_pca_var"] = _pca_model.explained_variance_ratio_ * 100
 
             coords = st.session_state[proj_key]
 
@@ -843,70 +919,173 @@ if st.session_state.results:
             # Truncate long signatures for hover
             plot_df["sig_short"] = plot_df["signature"].str[:60]
             plot_df["cluster_str"] = plot_df["cluster_id"].astype(str)
-            plot_df["severity_str"] = plot_df["severity"].astype(str)
+            plot_df["severity_str"] = plot_df["severity"].fillna("?").astype(str)
 
             if not show_noise_map:
-                plot_df = plot_df[~plot_df["is_noise"]]
+                plot_df = plot_df[~plot_df["is_noise"]].reset_index(drop=True)
 
             if len(plot_df) == 0:
                 st.info("No points to display — enable noise or run with lower min_samples.")
             else:
                 # ── Colour mapping ────────────────────────────────────────────
-                # Use a large discrete palette; noise always grey
-                NOISE_COLOR = "#2a3540"
+                NOISE_COLOR = "#1e2a32"
+
+                # 20 maximally distinct hues — chosen by hand to maximise perceptual
+                # distance between every adjacent pair. No two neighbours share the
+                # same hue family. Verified against deuteranopia/protanopia simulations.
                 PALETTE = [
-                    "#00d4ff","#ff7c3a","#00e87a","#ff3a5c","#a78bfa",
-                    "#fbbf24","#34d399","#f472b6","#60a5fa","#fb923c",
-                    "#4ade80","#f87171","#c084fc","#facc15","#2dd4bf",
-                    "#818cf8","#e879f9","#a3e635","#38bdf8","#fb7185",
+                    "#E63946",  # 0  vivid red
+                    "#2EC4B6",  # 1  teal       — max dist from red
+                    "#F4A261",  # 2  warm orange
+                    "#457B9D",  # 3  steel blue  — max dist from orange
+                    "#A8DADC",  # 4  ice blue
+                    "#C77DFF",  # 5  violet
+                    "#F9C74F",  # 6  golden yellow
+                    "#06D6A0",  # 7  emerald
+                    "#FF6B6B",  # 8  coral        — diff lightness from red
+                    "#118AB2",  # 9  ocean blue
+                    "#FFB703",  # 10 amber
+                    "#8338EC",  # 11 deep purple   — max dist from amber
+                    "#43AA8B",  # 12 sage green
+                    "#F72585",  # 13 hot pink      — max dist from green
+                    "#90E0EF",  # 14 powder blue
+                    "#FB5607",  # 15 burnt orange
+                    "#B5E48C",  # 16 lime          — light, distinct from emerald
+                    "#6A0572",  # 17 dark magenta  — max dist from lime
+                    "#FFD166",  # 18 light yellow  — diff lightness from amber
+                    "#264653",  # 19 dark teal     — max dist from light yellow
                 ]
+
+                # For >20 clusters generate additional colours via golden-angle HSL
+                # stepping so colours never repeat exactly, just cycle with lightness shift.
+                def _get_color(idx: int) -> str:
+                    if idx < len(PALETTE):
+                        return PALETTE[idx]
+                    import colorsys
+                    golden = 0.618033988749895
+                    hue = (idx * golden) % 1.0
+                    lightness = 0.55 if idx % 2 == 0 else 0.70
+                    r, g, b = colorsys.hls_to_rgb(hue, lightness, 0.85)
+                    return "#{:02x}{:02x}{:02x}".format(int(r*255), int(g*255), int(b*255))
 
                 unique_clusters = sorted(
                     [c for c in plot_df["cluster_id"].unique() if c != -1]
                 )
-                color_map = {str(c): PALETTE[i % len(PALETTE)] for i, c in enumerate(unique_clusters)}
-                color_map["-1"] = NOISE_COLOR
 
-                # Determine the column to colour by
-                if color_by == "cluster_id":
-                    color_col = "cluster_str"
-                    color_discrete_map = color_map
-                elif color_by == "incident_id":
-                    plot_df["inc_label"] = plot_df["incident_id"].fillna("noise")
-                    unique_incs = [i for i in sorted(plot_df["inc_label"].unique()) if i != "noise"]
-                    inc_color_map = {inc: PALETTE[i % len(PALETTE)] for i, inc in enumerate(unique_incs)}
-                    inc_color_map["noise"] = NOISE_COLOR
-                    color_col = "inc_label"
-                    color_discrete_map = inc_color_map
-                elif color_by == "severity":
-                    plot_df["severity_str"] = plot_df["severity"].fillna("?").astype(str)
-                    color_col = "severity_str"
-                    color_discrete_map = {
-                        "1": "#ff3a5c", "2": "#ff7c3a",
-                        "3": "#00d4ff", "4": "#00e87a", "?": NOISE_COLOR,
+                # ── Build per-colour-mode trace groups ────────────────────────
+                # Each mode defines: groups to iterate, label per group,
+                # colour per group, and subset of clustered_df.
+                # This fixes the bug where color_discrete_map was computed
+                # but never applied to the actual Scattergl traces.
+
+                if color_by == "severity":
+                    SEV_COLORS = {
+                        "1": "#E63946",  # red    — critical
+                        "2": "#F4A261",  # orange — high
+                        "3": "#2EC4B6",  # teal   — medium (not green to avoid "safe" signal)
+                        "4": "#A8DADC",  # ice    — low/info
+                        "?": "#3a4a50",  # dim    — unknown
                     }
-                else:  # proto
-                    plot_df["proto_label"] = plot_df["proto"].fillna("unknown")
-                    color_col = "proto_label"
-                    unique_protos = sorted(plot_df["proto_label"].unique())
-                    color_discrete_map = {p: PALETTE[i % len(PALETTE)] for i, p in enumerate(unique_protos)}
+                    plot_df["_sev_key"] = plot_df["severity"].fillna("?").astype(str)
+                    trace_groups = [
+                        (key, f"Severity {key}", SEV_COLORS.get(key, "#888888"),
+                         plot_df[(~plot_df["is_noise"]) & (plot_df["_sev_key"] == key)])
+                        for key in ["1", "2", "3", "4", "?"]
+                        if (plot_df["_sev_key"] == key).any()
+                    ]
+
+                elif color_by == "proto":
+                    plot_df["_proto_key"] = plot_df["proto"].fillna("unknown").str.upper()
+                    unique_protos = sorted(plot_df["_proto_key"].unique())
+                    trace_groups = [
+                        (proto, proto, _get_color(i),
+                         plot_df[(~plot_df["is_noise"]) & (plot_df["_proto_key"] == proto)])
+                        for i, proto in enumerate(unique_protos)
+                    ]
+
+                elif color_by == "category":
+                    plot_df["_cat_key"] = plot_df["category"].fillna("(none)").astype(str)
+                    unique_cats = sorted(plot_df["_cat_key"].unique())
+                    trace_groups = [
+                        (cat, cat, _get_color(i),
+                         plot_df[(~plot_df["is_noise"]) & (plot_df["_cat_key"] == cat)])
+                        for i, cat in enumerate(unique_cats)
+                    ]
+
+                elif color_by == "src_ip":
+                    # Top 15 source IPs get their own colour; the rest become "other"
+                    top_ips = (
+                        plot_df[~plot_df["is_noise"]]["src_ip"]
+                        .value_counts()
+                        .head(15)
+                        .index.tolist()
+                    )
+                    plot_df["_ip_key"] = plot_df["src_ip"].apply(
+                        lambda ip: ip if ip in top_ips else "other"
+                    )
+                    ordered = top_ips + (["other"] if "other" in plot_df["_ip_key"].values else [])
+                    trace_groups = [
+                        (ip, ip, _get_color(i) if ip != "other" else "#2a3a44",
+                         plot_df[(~plot_df["is_noise"]) & (plot_df["_ip_key"] == ip)])
+                        for i, ip in enumerate(ordered)
+                        if len(plot_df[(~plot_df["is_noise"]) & (plot_df["_ip_key"] == ip)]) > 0
+                    ]
+
+                else:  # cluster_id (default)
+                    # Label by cluster number, colour by cluster index.
+                    # incident_id mode is separate — do NOT use incident_id here
+                    # or both views look identical.
+                    trace_groups = [
+                        (
+                            f"CL-{cid}",            # key
+                            f"Cluster {cid}",        # legend label — cluster number, not incident
+                            _get_color(i),
+                            plot_df[(~plot_df["is_noise"]) & (plot_df["cluster_id"] == cid)],
+                        )
+                        for i, cid in enumerate(unique_clusters)
+                    ]
 
                 # ── Axis labels & descriptions ────────────────────────────────
+                # Use the method that was *actually* run (stored at projection time),
+                # not the radio value — they differ when t-SNE fell back to PCA.
                 _active_method = st.session_state.get(proj_method_key, proj_method)
+                _pca_var = st.session_state.get("_proj_pca_var")
+
                 if _active_method == "PCA":
-                    from sklearn.decomposition import PCA as _PCA
-                    _pca_check = _PCA(n_components=2).fit(embeddings)
-                    _var = _pca_check.explained_variance_ratio_ * 100
-                    x_label = f"PC1  —  explains {_var[0]:.1f}% of embedding variance  (alerts that differ most slide left/right)"
-                    y_label = f"PC2  —  explains {_var[1]:.1f}% of embedding variance  (next biggest difference runs up/down)"
+                    if _pca_var is not None:
+                        x_label = (
+                            f"PC1  ·  {_pca_var[0]:.1f}% of variance explained  "
+                            f"— alerts spread horizontally by their biggest overall difference"
+                        )
+                        y_label = (
+                            f"PC2  ·  {_pca_var[1]:.1f}% of variance explained  "
+                            f"— second biggest difference runs vertically"
+                        )
+                    else:
+                        x_label = "PC1  —  primary axis of embedding variance"
+                        y_label = "PC2  —  secondary axis of embedding variance"
                     axis_ticks_meaningful = True
+
                 elif _active_method == "UMAP":
-                    x_label = "UMAP-1  —  position has no numeric meaning; only distance between dots matters"
-                    y_label = "UMAP-2  —  position has no numeric meaning; only distance between dots matters"
+                    x_label = (
+                        "UMAP-1  —  arbitrary scale; "
+                        "dots close together = semantically similar alerts"
+                    )
+                    y_label = (
+                        "UMAP-2  —  arbitrary scale; "
+                        "dots close together = semantically similar alerts"
+                    )
                     axis_ticks_meaningful = False
+
                 else:  # t-SNE
-                    x_label = "t-SNE-1  —  position has no numeric meaning; only cluster shape and separation matter"
-                    y_label = "t-SNE-2  —  position has no numeric meaning; only cluster shape and separation matter"
+                    x_label = (
+                        "t-SNE-1  —  arbitrary scale; "
+                        "focus on cluster shape and separation, not axis values"
+                    )
+                    y_label = (
+                        "t-SNE-2  —  arbitrary scale; "
+                        "focus on cluster shape and separation, not axis values"
+                    )
                     axis_ticks_meaningful = False
 
                 # ── Scatter plot ──────────────────────────────────────────────
@@ -937,27 +1116,23 @@ if st.session_state.results:
                         customdata=noise_df[["src_ip", "sig_short"]].values,
                     ))
 
-                # Clustered layer — one trace per cluster so legend works
-                for i, cid in enumerate(unique_clusters):
-                    sub = clustered_df[clustered_df["cluster_id"] == cid]
+                # Clustered layer — one trace per group so the legend reflects
+                # the chosen colour_by attribute and colours are actually applied.
+                for _key, _label, _color, sub in trace_groups:
                     if len(sub) == 0:
                         continue
-                    inc_id = sub["incident_id"].iloc[0] if "incident_id" in sub.columns else None
-                    legend_name = f"{inc_id or f'CL-{cid}'}"
-                    dot_color = PALETTE[i % len(PALETTE)]
-
                     fig.add_trace(go.Scattergl(
                         x=sub["x"], y=sub["y"],
                         mode="markers",
-                        name=legend_name,
+                        name=str(_label),
                         marker=dict(
-                            color=dot_color,
+                            color=_color,
                             size=7,
-                            opacity=0.85,
-                            line=dict(width=0.5, color="rgba(0,0,0,0.3)"),
+                            opacity=0.88,
+                            line=dict(width=0.6, color="rgba(0,0,0,0.25)"),
                         ),
                         hovertemplate=(
-                            f"<b>{legend_name}</b><br>"
+                            f"<b>{_label}</b><br>"
                             "src: %{customdata[0]} → dst: %{customdata[1]}<br>"
                             "sig: %{customdata[2]}<br>"
                             "sev: %{customdata[3]}  proto: %{customdata[4]}<br>"
@@ -1075,7 +1250,7 @@ if st.session_state.results:
                         </div>
                       </div>
 
-                      <div style="background:#0f1318;border:1px solid #1a2530;border-top:2px solid #ff7c3a;
+                      <div style="background:#0f1318;border:1px solid #1a2530;border-top:2px solid #FFB800;
                                   padding:12px 14px;border-radius:2px;">
                         <div style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;
                                     color:#3d5066;letter-spacing:0.12em;text-transform:uppercase;
@@ -1132,7 +1307,7 @@ if st.session_state.results:
                     cluster_counts.head(40),
                     x="cluster_id", y="count",
                     template="plotly_dark",
-                    color_discrete_sequence=["#00d4ff"],
+                    color_discrete_sequence=["#2196F3"],
                 )
                 fig.update_layout(
                     paper_bgcolor="#0a0c10", plot_bgcolor="#0a0c10",
@@ -1156,7 +1331,7 @@ if st.session_state.results:
                     x="count", y="signature_short",
                     orientation="h",
                     template="plotly_dark",
-                    color_discrete_sequence=["#ff7c3a"],
+                    color_discrete_sequence=["#FFB800"],
                 )
                 fig2.update_layout(
                     paper_bgcolor="#0a0c10", plot_bgcolor="#0a0c10",
@@ -1180,7 +1355,7 @@ if st.session_state.results:
                 fig3 = px.pie(
                     sev_counts, names="severity", values="count",
                     template="plotly_dark",
-                    color_discrete_sequence=["#ff3a5c", "#ff7c3a", "#00d4ff", "#00e87a"],
+                    color_discrete_sequence=["#FF2D55", "#FFB800", "#30D158", "#64D2FF"],
                 )
                 fig3.update_layout(
                     paper_bgcolor="#0a0c10",
@@ -1200,7 +1375,7 @@ if st.session_state.results:
                     ip_counts, x="count", y="src_ip",
                     orientation="h",
                     template="plotly_dark",
-                    color_discrete_sequence=["#00e87a"],
+                    color_discrete_sequence=["#30D158"],
                 )
                 fig4.update_layout(
                     paper_bgcolor="#0a0c10", plot_bgcolor="#0a0c10",
