@@ -21,6 +21,8 @@ def run_pipeline(
     min_samples: int = 3,
     algo: str = "dbscan",
     distance_threshold: float = 0.25,
+    xi: float = 0.05,
+    min_cluster_size: int = 3,
 ) -> None:
     os.makedirs(out_dir, exist_ok=True)
 
@@ -52,6 +54,8 @@ def run_pipeline(
         eps=eps,
         min_samples=min_samples,
         distance_threshold=distance_threshold,
+        xi=xi,
+        min_cluster_size=min_cluster_size,
     )
 
     print("[5/6] Building incidents...")
@@ -97,7 +101,9 @@ def main():
     ap.add_argument("--out", default="out", help="Output directory")
     ap.add_argument("--model", default=DEFAULT_MODEL_NAME, help="SentenceTransformer model name")
     ap.add_argument("--limit", type=int, default=None, help="Limit number of alerts parsed (debug)")
-    ap.add_argument("--algo", choices=["dbscan", "hierarchical"], default="dbscan", help="Clustering algorithm: dbscan or hierarchical")
+    ap.add_argument("--algo", choices=["dbscan", "hierarchical", "optics"], default="dbscan", help="Clustering algorithm: dbscan, hierarchical, or optics")
+    ap.add_argument("--xi", type=float, default=0.05, help="OPTICS xi steepness threshold (0–1). Only used when --algo optics")
+    ap.add_argument("--min-cluster-size", type=int, default=3, help="OPTICS minimum cluster size. Only used when --algo optics")
     ap.add_argument("--dist-threshold", type=float, default=0.25, help="Hierarchical clustering distance threshold (cosine distance). Only used when --algo hierarchical")
     ap.add_argument("--window-min", type=int, default=None, help="Candidate grouping time window in minutes")
     ap.add_argument("--eps", type=float, default=0.25, help="DBSCAN eps (cosine distance)")
@@ -114,6 +120,8 @@ def main():
         min_samples=args.min_samples,
         algo=args.algo,
         distance_threshold=args.dist_threshold,
+        xi=args.xi,
+        min_cluster_size=args.min_cluster_size,
     )
 
 

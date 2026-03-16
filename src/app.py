@@ -324,17 +324,39 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 🧮 Clustering")
 
-    algo = st.radio("Algorithm", ["dbscan", "hierarchical"], index=0,
-        help="DBSCAN: density-based. Hierarchical: agglomerative average-link.")
+    algo = st.radio(
+        "Algorithm",
+        ["dbscan", "hierarchical", "optics"],
+        index=0,
+        help=(
+            "DBSCAN: density-based, requires ε and min_samples.\n"
+            "Hierarchical: agglomerative average-link, requires distance threshold.\n"
+            "OPTICS: variable-density extension of DBSCAN — no ε required, "
+            "handles clusters of varying density automatically."
+        ),
+    )
 
     if algo == "dbscan":
         eps = st.slider("DBSCAN ε (cosine dist)", 0.05, 0.80, 0.25, 0.01,
-            help="Max cosine distance between neighbours.")
+            help="Max cosine distance between neighbouring points.")
+        dist_threshold = 0.25
+        xi            = 0.05
+        min_cluster_size = min_samples
+    elif algo == "optics":
+        xi = st.slider("OPTICS ξ (xi)", 0.01, 0.50, 0.05, 0.01,
+            help="Steepness threshold for cluster boundary detection (0–0.5). "
+                 "Lower values create more, tighter clusters.")
+        min_cluster_size = st.slider("Min cluster size", 2, 20, min_samples, 1,
+            help="Minimum number of alerts to form an OPTICS cluster. "
+                 "Defaults to the global min_samples value above.")
+        eps           = 0.25
         dist_threshold = 0.25
     else:
         dist_threshold = st.slider("Distance threshold (cosine)", 0.05, 0.80, 0.25, 0.01,
             help="Agglomerative clustering cut threshold.")
-        eps = 0.25
+        eps           = 0.25
+        xi            = 0.05
+        min_cluster_size = min_samples
 
     st.markdown("---")
     st.markdown("### 🤖 Embedding Model")
@@ -453,6 +475,8 @@ def run_pipeline_ui(
     min_samples: int,
     algo: str,
     distance_threshold: float,
+    xi: float,
+    min_cluster_size: int,
     log_placeholder,
 ):
     log_lines = []
@@ -496,6 +520,8 @@ def run_pipeline_ui(
             df, embeddings,
             algo=algo, eps=eps, min_samples=min_samples,
             distance_threshold=distance_threshold,
+            xi=xi,
+            min_cluster_size=min_cluster_size,
         )
         n_clusters = int((df["cluster_id"] != -1).sum())
         log(f"   ✓ {n_clusters:,} alerts assigned to clusters.")
@@ -575,9 +601,9 @@ if run_btn:
     out_dir  = os.path.join(tmp, "out")
     os.makedirs(out_dir)
 
-    # Stream to disk in 64 MB chunks — handles files up to 1 GB without
+    # Stream to disk in 256 MB chunks — handles files up to 3 GB without
     # loading the entire buffer into Python memory at once.
-    CHUNK = 64 * 1024 * 1024  # 64 MB
+    CHUNK = 256 * 1024 * 1024  # 256 MB
     uploaded_file.seek(0)
     with open(eve_path, "wb") as f:
         while True:
@@ -599,6 +625,8 @@ if run_btn:
         min_samples=min_samples,
         algo=algo,
         distance_threshold=dist_threshold,
+        xi=xi,
+        min_cluster_size=min_cluster_size,
         log_placeholder=log_ph,
     )
 
@@ -625,8 +653,8 @@ if st.session_state.results:
     render_stat_cards(stats)
 
     # Tabs
-    tab_inc, tab_alerts, tab_dist, tab_download = st.tabs([
-        "Incidents", "Alert Table", "Distributions", "Download"
+    tab_inc, tab_alerts, tab_cluster, tab_dist, tab_download = st.tabs([
+        "Incidents", "Alert Table", "Cluster Map", "Distributions", "Download"
     ])
 
     # ── Incidents tab ─────────────────────────────────────────────────────────
@@ -702,6 +730,381 @@ if st.session_state.results:
         st.dataframe(disp.head(2000), use_container_width=True, hide_index=True, height=450)
         if len(disp) > 2000:
             st.caption(f"Displaying first 2,000 of {len(disp):,}. Download the full parquet for all rows.")
+
+
+    # ── Cluster Map tab ───────────────────────────────────────────────────────
+    with tab_cluster:
+        try:
+            import plotly.express as px
+            import plotly.graph_objects as go
+            has_plotly = True
+        except ImportError:
+            has_plotly = False
+            st.warning("Install plotly for the cluster map: pip install plotly")
+
+        embeddings = r.get("embeddings")
+
+        if not has_plotly:
+            pass
+        elif embeddings is None or len(embeddings) == 0:
+            st.info("No embeddings available — re-run the pipeline.")
+        else:
+            # ── Projection (cached per run) ───────────────────────────────────
+            proj_key = "_proj_2d"
+            proj_method_key = "_proj_method"
+
+            col_ctrl1, col_ctrl2, col_ctrl3 = st.columns([2, 1, 1])
+            with col_ctrl1:
+                proj_method = st.radio(
+                    "Projection method",
+                    ["UMAP", "PCA", "t-SNE"],
+                    horizontal=True,
+                    help=(
+                        "UMAP: best cluster separation, requires umap-learn. "
+                        "PCA: instant, linear. "
+                        "t-SNE: good local structure, slow on large datasets."
+                    ),
+                )
+            with col_ctrl2:
+                show_noise_map = st.checkbox("Show noise points", value=True,
+                    help="Alerts with cluster_id = -1 shown as grey dots.")
+            with col_ctrl3:
+                color_by = st.selectbox(
+                    "Colour by",
+                    ["cluster_id", "incident_id", "severity", "proto"],
+                    help="Attribute used to colour each dot.",
+                )
+
+            # Re-project if method changed or no cache
+            needs_reproject = (
+                proj_key not in st.session_state
+                or st.session_state.get(proj_method_key) != proj_method
+            )
+
+            if needs_reproject:
+                with st.spinner(f"Projecting {len(embeddings):,} embeddings with {proj_method}…"):
+                    try:
+                        if proj_method == "UMAP":
+                            import umap
+                            reducer = umap.UMAP(n_components=2, random_state=42, metric="cosine")
+                            coords = reducer.fit_transform(embeddings)
+                        elif proj_method == "t-SNE":
+                            from sklearn.manifold import TSNE
+                            # For large datasets sub-sample to 5000 then project the rest with PCA init
+                            if len(embeddings) > 5000:
+                                from sklearn.decomposition import PCA
+                                pca_init = PCA(n_components=2).fit_transform(embeddings)
+                                coords = TSNE(
+                                    n_components=2, random_state=42,
+                                    init=pca_init[:5000], perplexity=30, n_iter=500,
+                                    method="barnes_hut",
+                                ).fit_transform(embeddings[:5000])
+                                # Extend remaining points via PCA (fallback for large sets)
+                                remaining = PCA(n_components=2).fit_transform(embeddings)
+                                coords = remaining  # use full PCA if > 5000 alerts
+                                st.caption("⚠ Dataset > 5,000 alerts — PCA used instead of t-SNE for performance.")
+                            else:
+                                from sklearn.decomposition import PCA
+                                pca_init = PCA(n_components=2).fit_transform(embeddings)
+                                coords = TSNE(
+                                    n_components=2, random_state=42,
+                                    init=pca_init, perplexity=30, n_iter=750,
+                                    method="barnes_hut",
+                                ).fit_transform(embeddings)
+                        else:  # PCA
+                            from sklearn.decomposition import PCA
+                            coords = PCA(n_components=2).fit_transform(embeddings)
+
+                        st.session_state[proj_key] = coords
+                        st.session_state[proj_method_key] = proj_method
+
+                    except ImportError as e:
+                        missing = str(e).split("'")[1] if "'" in str(e) else str(e)
+                        st.error(
+                            f"{proj_method} requires the `{missing}` package. "
+                            f"Install it with: `pip install {missing}` — "
+                            f"falling back to PCA."
+                        )
+                        from sklearn.decomposition import PCA
+                        coords = PCA(n_components=2).fit_transform(embeddings)
+                        st.session_state[proj_key] = coords
+                        st.session_state[proj_method_key] = "PCA"
+
+            coords = st.session_state[proj_key]
+
+            # ── Build plot dataframe ──────────────────────────────────────────
+            plot_df = df.copy().reset_index(drop=True)
+            plot_df["x"] = coords[:, 0]
+            plot_df["y"] = coords[:, 1]
+            plot_df["is_noise"] = plot_df["cluster_id"] == -1
+            plot_df["label"] = plot_df["cluster_id"].apply(
+                lambda c: "noise" if c == -1 else f"cluster {int(c)}"
+            )
+            # Truncate long signatures for hover
+            plot_df["sig_short"] = plot_df["signature"].str[:60]
+            plot_df["cluster_str"] = plot_df["cluster_id"].astype(str)
+            plot_df["severity_str"] = plot_df["severity"].astype(str)
+
+            if not show_noise_map:
+                plot_df = plot_df[~plot_df["is_noise"]]
+
+            if len(plot_df) == 0:
+                st.info("No points to display — enable noise or run with lower min_samples.")
+            else:
+                # ── Colour mapping ────────────────────────────────────────────
+                # Use a large discrete palette; noise always grey
+                NOISE_COLOR = "#2a3540"
+                PALETTE = [
+                    "#00d4ff","#ff7c3a","#00e87a","#ff3a5c","#a78bfa",
+                    "#fbbf24","#34d399","#f472b6","#60a5fa","#fb923c",
+                    "#4ade80","#f87171","#c084fc","#facc15","#2dd4bf",
+                    "#818cf8","#e879f9","#a3e635","#38bdf8","#fb7185",
+                ]
+
+                unique_clusters = sorted(
+                    [c for c in plot_df["cluster_id"].unique() if c != -1]
+                )
+                color_map = {str(c): PALETTE[i % len(PALETTE)] for i, c in enumerate(unique_clusters)}
+                color_map["-1"] = NOISE_COLOR
+
+                # Determine the column to colour by
+                if color_by == "cluster_id":
+                    color_col = "cluster_str"
+                    color_discrete_map = color_map
+                elif color_by == "incident_id":
+                    plot_df["inc_label"] = plot_df["incident_id"].fillna("noise")
+                    unique_incs = [i for i in sorted(plot_df["inc_label"].unique()) if i != "noise"]
+                    inc_color_map = {inc: PALETTE[i % len(PALETTE)] for i, inc in enumerate(unique_incs)}
+                    inc_color_map["noise"] = NOISE_COLOR
+                    color_col = "inc_label"
+                    color_discrete_map = inc_color_map
+                elif color_by == "severity":
+                    plot_df["severity_str"] = plot_df["severity"].fillna("?").astype(str)
+                    color_col = "severity_str"
+                    color_discrete_map = {
+                        "1": "#ff3a5c", "2": "#ff7c3a",
+                        "3": "#00d4ff", "4": "#00e87a", "?": NOISE_COLOR,
+                    }
+                else:  # proto
+                    plot_df["proto_label"] = plot_df["proto"].fillna("unknown")
+                    color_col = "proto_label"
+                    unique_protos = sorted(plot_df["proto_label"].unique())
+                    color_discrete_map = {p: PALETTE[i % len(PALETTE)] for i, p in enumerate(unique_protos)}
+
+                # ── Axis labels & descriptions ────────────────────────────────
+                _active_method = st.session_state.get(proj_method_key, proj_method)
+                if _active_method == "PCA":
+                    from sklearn.decomposition import PCA as _PCA
+                    _pca_check = _PCA(n_components=2).fit(embeddings)
+                    _var = _pca_check.explained_variance_ratio_ * 100
+                    x_label = f"PC1  —  explains {_var[0]:.1f}% of embedding variance  (alerts that differ most slide left/right)"
+                    y_label = f"PC2  —  explains {_var[1]:.1f}% of embedding variance  (next biggest difference runs up/down)"
+                    axis_ticks_meaningful = True
+                elif _active_method == "UMAP":
+                    x_label = "UMAP-1  —  position has no numeric meaning; only distance between dots matters"
+                    y_label = "UMAP-2  —  position has no numeric meaning; only distance between dots matters"
+                    axis_ticks_meaningful = False
+                else:  # t-SNE
+                    x_label = "t-SNE-1  —  position has no numeric meaning; only cluster shape and separation matter"
+                    y_label = "t-SNE-2  —  position has no numeric meaning; only cluster shape and separation matter"
+                    axis_ticks_meaningful = False
+
+                # ── Scatter plot ──────────────────────────────────────────────
+                # Split noise and clustered for layering (noise underneath)
+                noise_df     = plot_df[plot_df["is_noise"]]
+                clustered_df = plot_df[~plot_df["is_noise"]]
+
+                fig = go.Figure()
+
+                # Noise layer
+                if show_noise_map and len(noise_df) > 0:
+                    fig.add_trace(go.Scattergl(
+                        x=noise_df["x"], y=noise_df["y"],
+                        mode="markers",
+                        name="noise",
+                        marker=dict(
+                            color=NOISE_COLOR,
+                            size=4,
+                            opacity=0.35,
+                            line=dict(width=0),
+                        ),
+                        hovertemplate=(
+                            "<b>NOISE</b><br>"
+                            "src: %{customdata[0]}<br>"
+                            "sig: %{customdata[1]}<br>"
+                            "<extra></extra>"
+                        ),
+                        customdata=noise_df[["src_ip", "sig_short"]].values,
+                    ))
+
+                # Clustered layer — one trace per cluster so legend works
+                for i, cid in enumerate(unique_clusters):
+                    sub = clustered_df[clustered_df["cluster_id"] == cid]
+                    if len(sub) == 0:
+                        continue
+                    inc_id = sub["incident_id"].iloc[0] if "incident_id" in sub.columns else None
+                    legend_name = f"{inc_id or f'CL-{cid}'}"
+                    dot_color = PALETTE[i % len(PALETTE)]
+
+                    fig.add_trace(go.Scattergl(
+                        x=sub["x"], y=sub["y"],
+                        mode="markers",
+                        name=legend_name,
+                        marker=dict(
+                            color=dot_color,
+                            size=7,
+                            opacity=0.85,
+                            line=dict(width=0.5, color="rgba(0,0,0,0.3)"),
+                        ),
+                        hovertemplate=(
+                            f"<b>{legend_name}</b><br>"
+                            "src: %{customdata[0]} → dst: %{customdata[1]}<br>"
+                            "sig: %{customdata[2]}<br>"
+                            "sev: %{customdata[3]}  proto: %{customdata[4]}<br>"
+                            "<extra></extra>"
+                        ),
+                        customdata=sub[["src_ip", "dest_ip", "sig_short", "severity_str", "proto"]].values,
+                    ))
+
+                fig.update_layout(
+                    paper_bgcolor="#0a0c10",
+                    plot_bgcolor="#080b0f",
+                    font=dict(family="IBM Plex Mono", color="#4a6070", size=11),
+                    margin=dict(l=10, r=10, t=30, b=10),
+                    xaxis=dict(
+                        title=dict(
+                            text=x_label,
+                            font=dict(size=11, color="#4a8090", family="IBM Plex Mono"),
+                        ),
+                        gridcolor="#111820",
+                        zeroline=True,
+                        zerolinecolor="#1a2530",
+                        zerolinewidth=1,
+                        showticklabels=axis_ticks_meaningful,
+                        tickfont=dict(size=9, color="#2a3a4a", family="IBM Plex Mono"),
+                        tickformat=".2f",
+                    ),
+                    yaxis=dict(
+                        title=dict(
+                            text=y_label,
+                            font=dict(size=11, color="#4a8090", family="IBM Plex Mono"),
+                        ),
+                        gridcolor="#111820",
+                        zeroline=True,
+                        zerolinecolor="#1a2530",
+                        zerolinewidth=1,
+                        showticklabels=axis_ticks_meaningful,
+                        tickfont=dict(size=9, color="#2a3a4a", family="IBM Plex Mono"),
+                        tickformat=".2f",
+                    ),
+                    legend=dict(
+                        bgcolor="#0f1318",
+                        bordercolor="#1e2530",
+                        borderwidth=1,
+                        font=dict(size=10, color="#7a8799"),
+                        itemsizing="constant",
+                        title=dict(text="INCIDENT / CLUSTER", font=dict(size=10, color="#3d5066")),
+                    ),
+                    title=dict(
+                        text=(
+                            f"{st.session_state.get(proj_method_key, proj_method)} projection  ·  "
+                            f"{len(clustered_df):,} clustered  ·  "
+                            f"{len(noise_df):,} noise  ·  "
+                            f"{len(unique_clusters)} clusters"
+                        ),
+                        font=dict(size=12, color="#3d5066", family="IBM Plex Mono"),
+                        x=0.01,
+                    ),
+                    height=600,
+                )
+
+                st.plotly_chart(fig, use_container_width=True)
+
+                # ── Description panel ────────────────────────────────────────
+                _active_method = st.session_state.get(proj_method_key, proj_method)
+                _method_explanations = {
+                    "PCA": (
+                        "PCA (Principal Component Analysis) rotates the 384-dimensional "
+                        "embedding space so the axis with the most variation across all "
+                        "alerts becomes the horizontal axis (PC1), and the next most "
+                        "varied becomes vertical (PC2). "
+                        "<b>The tick numbers are real and comparable</b> — a dot at x=2.5 "
+                        "is genuinely further along that axis than one at x=0.8. "
+                        "Tight groups of same-colour dots mean those alerts have very "
+                        "similar signatures, ports, and protocols."
+                    ),
+                    "UMAP": (
+                        "UMAP (Uniform Manifold Approximation and Projection) learns the "
+                        "local neighbourhood structure of the 384-dimensional embedding "
+                        "space and flattens it to 2D while preserving which alerts are "
+                        "close to which. "
+                        "<b>The axis numbers are arbitrary</b> — ignore them. "
+                        "What matters: dots that appear close together are semantically "
+                        "similar alerts. A tight island of colour = a strong, coherent "
+                        "cluster. A blob spread across the map = a loose grouping. "
+                        "UMAP gives the most faithful picture of true cluster separation."
+                    ),
+                    "t-SNE": (
+                        "t-SNE (t-distributed Stochastic Neighbour Embedding) pulls "
+                        "similar alerts together and pushes dissimilar ones apart, "
+                        "emphasising local neighbourhood structure. "
+                        "<b>The axis numbers are arbitrary</b> — ignore them. "
+                        "Cluster size and inter-cluster distance on this plot are "
+                        "not proportional to real similarity differences; use it to "
+                        "spot whether clusters are clean and tight, not to measure "
+                        "how far apart two incidents are."
+                    ),
+                }
+                _method_desc = _method_explanations.get(_active_method, "")
+
+                st.markdown(
+                    f"""
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px;">
+
+                      <div style="background:#0f1318;border:1px solid #1a2530;border-top:2px solid #00d4ff;
+                                  padding:12px 14px;border-radius:2px;">
+                        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;
+                                    color:#3d5066;letter-spacing:0.12em;text-transform:uppercase;
+                                    margin-bottom:6px;">How to read this chart</div>
+                        <div style="font-size:0.8rem;color:#7a8da0;line-height:1.55;">
+                          <b style="color:#c8d0db;">Each dot</b> = one alert from your eve.json.<br>
+                          <b style="color:#c8d0db;">Dot colour</b> = the cluster or attribute selected in "Colour by".<br>
+                          <b style="color:#c8d0db;">Proximity</b> = similarity — dots near each other fired for the
+                          same kind of activity (same signature family, port pattern, or protocol).<br>
+                          <b style="color:#2a3a4a;">Grey dots</b> = noise alerts the algorithm couldn't fit into any cluster.
+                        </div>
+                      </div>
+
+                      <div style="background:#0f1318;border:1px solid #1a2530;border-top:2px solid #ff7c3a;
+                                  padding:12px 14px;border-radius:2px;">
+                        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;
+                                    color:#3d5066;letter-spacing:0.12em;text-transform:uppercase;
+                                    margin-bottom:6px;">What the axes mean — {_active_method}</div>
+                        <div style="font-size:0.8rem;color:#7a8da0;line-height:1.55;">
+                          {_method_desc}
+                        </div>
+                      </div>
+
+                      <div style="background:#0f1318;border:1px solid #1a2530;border-top:2px solid #00e87a;
+                                  padding:12px 14px;border-radius:2px;">
+                        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;
+                                    color:#3d5066;letter-spacing:0.12em;text-transform:uppercase;
+                                    margin-bottom:6px;">Patterns to look for</div>
+                        <div style="font-size:0.8rem;color:#7a8da0;line-height:1.55;">
+                          <b style="color:#c8d0db;">Tight island</b> = strong, coherent incident (good cluster).<br>
+                          <b style="color:#c8d0db;">Elongated streak</b> = alerts from the same src_ip over time,
+                          with slight signature variation.<br>
+                          <b style="color:#c8d0db;">Two colours mixed</b> = possible cluster over-merge — consider
+                          lowering ε or xi.<br>
+                          <b style="color:#c8d0db;">Scattered noise around a cluster</b> = related activity the
+                          algorithm was uncertain about — try increasing the time window.
+                        </div>
+                      </div>
+
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
 
     # ── Distributions tab ─────────────────────────────────────────────────────
     with tab_dist:

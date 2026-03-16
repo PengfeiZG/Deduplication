@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 import numpy as np
 import pandas as pd
 from tqdm import tqdm
-from sklearn.cluster import DBSCAN, AgglomerativeClustering
+from sklearn.cluster import DBSCAN, AgglomerativeClustering, OPTICS
 
 
 def parse_suricata_timestamp(ts: str) -> datetime:
@@ -43,6 +43,17 @@ def _apply_hierarchical(X: np.ndarray, distance_threshold: float) -> np.ndarray:
     return model.fit_predict(X)
 
 
+def _apply_optics(X: np.ndarray, min_samples: int, xi: float, min_cluster_size: int) -> np.ndarray:
+    model = OPTICS(
+        min_samples=min_samples,
+        xi=xi,
+        min_cluster_size=min_cluster_size,
+        metric="cosine",
+        cluster_method="xi",
+    )
+    return model.fit_predict(X)
+
+
 def _postprocess_min_cluster_size(labels: np.ndarray, min_samples: int) -> np.ndarray:
     labels = labels.astype(int)
     unique, counts = np.unique(labels, return_counts=True)
@@ -61,10 +72,12 @@ def cluster_within_groups(
     eps: float = 0.25,
     min_samples: int = 3,
     distance_threshold: float = 0.25,
+    xi: float = 0.05,
+    min_cluster_size: int = 3,
 ) -> pd.DataFrame:
     algo = algo.lower().strip()
-    if algo not in ("dbscan", "hierarchical"):
-        raise ValueError("algo must be 'dbscan' or 'hierarchical'")
+    if algo not in ("dbscan", "hierarchical", "optics"):
+        raise ValueError("algo must be 'dbscan', 'hierarchical', or 'optics'")
 
     df = df.copy()
     df["cluster_id"] = -1
@@ -79,6 +92,13 @@ def cluster_within_groups(
 
         if algo == "dbscan":
             labels = _apply_dbscan(X, eps=eps, min_samples=min_samples)
+        elif algo == "optics":
+            labels = _apply_optics(
+                X,
+                min_samples=min_samples,
+                xi=xi,
+                min_cluster_size=min_cluster_size,
+            )
         else:
             labels = _apply_hierarchical(X, distance_threshold=distance_threshold)
             labels = _postprocess_min_cluster_size(labels, min_samples=min_samples)

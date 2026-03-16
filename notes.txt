@@ -5,7 +5,7 @@ Research Topic: Can semantic machine learning based clustering of Suricata IDS a
 
     Reducing Alert Fatigue
 
-pip install streamlit plotly
+pip install streamlit pandas numpy scikit-learn sentence-transformers plotly tqdm umap-learn
 streamlit run app.py
 
 pip install -r requirements.txt
