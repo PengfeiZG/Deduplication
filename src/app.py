@@ -749,9 +749,16 @@ if st.session_state.results:
 
             for inc in filtered:
                 render_incident_card(inc)
-                with st.expander("Representative alerts"):
-                    rep = pd.DataFrame(inc["representative_alerts"])
-                    st.dataframe(rep, use_container_width=True, hide_index=True)
+                with st.expander(f"All alerts ({inc['alert_count']})"):
+                    # Pull every alert for this cluster directly from df,
+                    # not the 5-row representative_alerts snapshot in the incident dict.
+                    cols = [c for c in [
+                        "timestamp", "src_ip", "src_port", "dest_ip", "dest_port",
+                        "proto", "signature", "category", "severity",
+                    ] if c in df.columns]
+                    all_alerts = df[df["cluster_id"] == inc["cluster_id"]][cols].copy()
+                    all_alerts = all_alerts.sort_values("timestamp").reset_index(drop=True)
+                    st.dataframe(all_alerts, use_container_width=True, hide_index=True)
 
     # ── Alert table tab ───────────────────────────────────────────────────────
     with tab_alerts:
