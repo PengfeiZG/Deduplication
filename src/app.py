@@ -304,7 +304,7 @@ st.markdown(
 
 # ── Header ────────────────────────────────────────────────────────────────────
 st.markdown('<div class="main-header">⚡ Suricata IDS · Alert Clustering</div>', unsafe_allow_html=True)
-st.markdown('<div class="main-subheader">Semantic grouping & incident synthesis from eve.json streams</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-subheader">AI-Driven Alert Deduplication and Incident Clustering</div>', unsafe_allow_html=True)
 
 # ── Sidebar — Pipeline Configuration ─────────────────────────────────────────
 with st.sidebar:
