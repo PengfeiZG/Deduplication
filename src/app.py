@@ -364,14 +364,10 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 🤖 Embedding Model")
 
-    model_name = st.selectbox(
+    model_name = st.text_input(
         "Sentence Transformer",
-        [
-            "sentence-transformers/all-MiniLM-L6-v2",
-            "sentence-transformers/all-mpnet-base-v2",
-            "sentence-transformers/paraphrase-MiniLM-L3-v2",
-        ],
-        index=0,
+        value="sentence-transformers/all-MiniLM-L6-v2",
+        disabled=True
     )
 
     limit = st.number_input("Alert parse limit (0 = all)", min_value=0, value=0, step=500,
