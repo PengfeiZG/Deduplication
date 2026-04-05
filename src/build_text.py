@@ -52,7 +52,9 @@ def build_alert_text(
     if proto:
         tokens.append(f"PROTO={proto}")
     if src_port is not None:
-        tokens.append(f"SRC_PORT={src_port}")
+        # Only encode the semantic bucket, not the raw ephemeral port number.
+        # Exact src_port values are randomised per-connection and add noise
+        # to embeddings without conveying meaningful attack context.
         tokens.append(f"SRC_BUCKET={port_bucket(src_port)}")
     if dest_port is not None:
         tokens.append(f"DST_PORT={dest_port}")

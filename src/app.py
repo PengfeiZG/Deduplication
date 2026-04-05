@@ -24,22 +24,40 @@ import streamlit as st
 # regardless of where app.py is placed on disk.
 
 def _load_project_as_package(pkg_dir: str, pkg_name: str = "_suricata_pkg"):
+    # Force a clean reload every pipeline run so code edits take effect
     if pkg_name in sys.modules:
-        return sys.modules[pkg_name]
+        del sys.modules[pkg_name]
+
+    for mod in list(sys.modules.keys()):
+        if mod.startswith(f"{pkg_name}."):
+            del sys.modules[mod]
 
     pkg = types.ModuleType(pkg_name)
     pkg.__path__ = [pkg_dir]
     pkg.__package__ = pkg_name
     sys.modules[pkg_name] = pkg
 
-    for mod_name in ["build_text", "parse_suricata", "embed", "cluster", "incidents", "pipeline"]:
+    module_order = [
+        "build_text",
+        "parse_suricata",
+        "embed",
+        "cluster",
+        "incidents",
+        "pipeline",
+    ]
+
+    for mod_name in module_order:
         fpath = os.path.join(pkg_dir, f"{mod_name}.py")
         if not os.path.exists(fpath):
             continue
+
         full_name = f"{pkg_name}.{mod_name}"
         spec = importlib.util.spec_from_file_location(
-            full_name, fpath, submodule_search_locations=[]
+            full_name,
+            fpath,
+            submodule_search_locations=[]
         )
+
         mod = importlib.util.module_from_spec(spec)
         mod.__package__ = pkg_name
         sys.modules[full_name] = mod
@@ -319,7 +337,7 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 🔬 Grouping")
 
-    window_minutes = st.slider("Time window (minutes)", 1, 60, 10, 1,
+    window_minutes = st.slider("Time window (minutes)", 1, 120, 30, 5,
         help="Alerts from the same src_ip within this window are candidate cluster members.")
     min_samples = st.slider("Min cluster size", 2, 20, 3, 1,
         help="Minimum alerts required to form a cluster.")
@@ -340,7 +358,7 @@ with st.sidebar:
     )
 
     if algo == "dbscan":
-        eps = st.slider("DBSCAN ε (cosine dist)", 0.05, 0.80, 0.25, 0.01,
+        eps = st.slider("DBSCAN ε (cosine dist)", 0.05, 0.80, 0.35, 0.01,
             help="Max cosine distance between neighbouring points.")
         dist_threshold = 0.25
         xi            = 0.05
@@ -355,7 +373,7 @@ with st.sidebar:
         eps           = 0.25
         dist_threshold = 0.25
     else:
-        dist_threshold = st.slider("Distance threshold (cosine)", 0.05, 0.80, 0.25, 0.01,
+        dist_threshold = st.slider("Distance threshold (cosine)", 0.05, 0.80, 0.35, 0.01,
             help="Agglomerative clustering cut threshold.")
         eps           = 0.25
         xi            = 0.05
@@ -364,11 +382,8 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 🤖 Embedding Model")
 
-    model_name = st.text_input(
-        "Sentence Transformer",
-        value="sentence-transformers/all-MiniLM-L6-v2",
-        disabled=True
-    )
+    model_name = "sentence-transformers/all-MiniLM-L12-v2"
+    st.markdown("**Embedding model:** all-MiniLM-L12-v2")
 
     limit = st.number_input("Alert parse limit (0 = all)", min_value=0, value=0, step=500,
         help="Cap alerts for faster debug runs.")
@@ -427,7 +442,7 @@ def render_stat_cards(stats: dict):
 def render_incident_card(inc: dict):
     sev = inc.get("max_severity")
     cls = sev_class(sev)
-    _SEV_LABELS = {1: ("sev1", "CRITICAL"), 2: ("sev2", "HIGH"), 3: ("sev3", "MEDIUM"), 4: ("sev4", "LOW")}
+    _SEV_LABELS = {1: ("sev1", "HIGH"), 2: ("sev2", "MEDIUM"), 3: ("sev3", "LOW"), 4: ("sev4", "UNKNOWN")}
     _sev_cls, _sev_label = _SEV_LABELS.get(sev, ("", "")) if sev else ("", "")
     sev_badge = f'<span class="inc-badge {_sev_cls}">SEV {sev} · {_sev_label}</span>' if sev else ""
     alert_count = inc["alert_count"]
@@ -491,12 +506,23 @@ def run_pipeline_ui(
         # Load project modules as a synthetic package so relative imports work.
         pkg_dir = os.path.dirname(os.path.abspath(__file__))
         pkg = _load_project_as_package(pkg_dir)
+        
+        print(f"APP FILE: {__file__}")
+        print(f"PKG DIR: {pkg_dir}")
+        print(f"INCIDENTS FILE: {getattr(pkg.incidents, '__file__', 'missing')}")
+        print(f"STITCH LINE: {pkg.incidents.stitch_incidents.__code__.co_firstlineno}")
+
+        log(f"APP FILE: {__file__}")
+        log(f"PKG DIR: {pkg_dir}")
+        log(f"INCIDENTS FILE: {getattr(pkg.incidents, '__file__', 'missing')}")
+        log(f"STITCH LINE: {pkg.incidents.stitch_incidents.__code__.co_firstlineno}")
 
         parse_suricata_alerts   = pkg.parse_suricata.parse_suricata_alerts
         embed_alerts            = pkg.embed.embed_alerts
         assign_candidate_group  = pkg.cluster.assign_candidate_group
         cluster_within_groups   = pkg.cluster.cluster_within_groups
         build_incidents         = pkg.incidents.build_incidents
+        stitch_incidents        = pkg.incidents.stitch_incidents
 
         log("→ [1/6] Parsing Suricata alerts...")
         df = parse_suricata_alerts(eve_path, limit=limit)
@@ -527,11 +553,18 @@ def run_pipeline_ui(
 
         log("→ [5/6] Building incidents...")
         incidents = build_incidents(df)
-        cluster_to_incident = {inc["cluster_id"]: inc["incident_id"] for inc in incidents}
+        incidents = stitch_incidents(incidents)
+
+        cluster_to_incident = {}
+        for inc in incidents:
+            for cid in inc.get("merged_cluster_ids", [inc["cluster_id"]]):
+                cluster_to_incident[int(cid)] = inc["incident_id"]
+
         df["incident_id"] = df["cluster_id"].apply(
             lambda cid: cluster_to_incident.get(int(cid)) if cid != -1 else None
         )
-        log(f"   ✓ {len(incidents):,} incidents generated.")
+
+        log(f"   ✓ {len(incidents):,} incidents generated after stitching.")
 
         log("→ [6/6] Writing outputs...")
         df_out = df.drop(columns=["ts_dt"], errors="ignore")
@@ -746,14 +779,20 @@ if st.session_state.results:
             for inc in filtered:
                 render_incident_card(inc)
                 with st.expander(f"All alerts ({inc['alert_count']})"):
-                    # Pull every alert for this cluster directly from df,
-                    # not the 5-row representative_alerts snapshot in the incident dict.
                     cols = [c for c in [
-                        "timestamp", "src_ip", "src_port", "dest_ip", "dest_port",
-                        "proto", "signature", "category", "severity",
+                        "timestamp", "src_ip", "src_port",
+                        "dest_ip", "dest_port", "proto",
+                        "signature", "category", "severity",
                     ] if c in df.columns]
-                    all_alerts = df[df["cluster_id"] == inc["cluster_id"]][cols].copy()
-                    all_alerts = all_alerts.sort_values("timestamp").reset_index(drop=True)
+
+                    cluster_ids = inc.get("merged_cluster_ids", [inc["cluster_id"]])
+
+                    all_alerts = (
+                        df[df["cluster_id"].isin(cluster_ids)][cols]
+                        .sort_values("timestamp")
+                        .reset_index(drop=True)
+                    )
+
                     st.dataframe(all_alerts, use_container_width=True, hide_index=True)
 
     # ── Alert table tab ───────────────────────────────────────────────────────
@@ -879,7 +918,8 @@ if st.session_state.results:
                             else:
                                 coords = TSNE(
                                     n_components=2, random_state=42,
-                                    init=pca_init, perplexity=30, n_iter=750,
+                                    init="pca", perplexity=30, max_iter=750, 
+                                    learning_rate="auto",
                                     method="barnes_hut",
                                 ).fit_transform(embeddings)
 

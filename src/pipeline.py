@@ -1,3 +1,4 @@
+
 import argparse
 import json
 import os
@@ -8,7 +9,7 @@ import numpy as np
 from .parse_suricata import parse_suricata_alerts
 from .embed import embed_alerts, DEFAULT_MODEL_NAME
 from .cluster import assign_candidate_group, cluster_within_groups
-from .incidents import build_incidents
+from .incidents import build_incidents, stitch_incidents
 
 
 def run_pipeline(
@@ -17,25 +18,23 @@ def run_pipeline(
     model_name: str = DEFAULT_MODEL_NAME,
     limit: Optional[int] = None,
     window_minutes: Optional[int] = None,
-    eps: float = 0.25,
+    eps: float = 0.35,
     min_samples: int = 3,
     algo: str = "dbscan",
-    distance_threshold: float = 0.25,
+    distance_threshold: float = 0.35,
     xi: float = 0.05,
     min_cluster_size: int = 3,
 ) -> None:
     os.makedirs(out_dir, exist_ok=True)
 
-    # Track whether the user explicitly set --window-min
     used_default_window = window_minutes is None
-    window_minutes = 10 if window_minutes is None else window_minutes
+    window_minutes = 30 if window_minutes is None else window_minutes
 
     print("[1/6] Parsing Suricata alerts...")
     df = parse_suricata_alerts(eve_json_path, limit=limit)
 
     print("[2/6] Assigning candidate groups (time window + src_ip)...")
     df = assign_candidate_group(df, window_minutes=window_minutes)
-    # Filter out candidate groups that cannot possibly form a cluster
     group_sizes = df["candidate_group"].value_counts()
     keep_groups = group_sizes[group_sizes >= min_samples].index
     df = df[df["candidate_group"].isin(keep_groups)].reset_index(drop=True)
@@ -60,9 +59,14 @@ def run_pipeline(
 
     print("[5/6] Building incidents...")
     incidents = build_incidents(df)
+    incidents = stitch_incidents(incidents)
 
-    # Add incident_id to alert rows for readable labels in viz
-    cluster_to_incident = {inc["cluster_id"]: inc["incident_id"] for inc in incidents}
+    # Map all cluster ids to their final stitched incident id
+    cluster_to_incident = {}
+    for inc in incidents:
+        for cid in inc.get("merged_cluster_ids", [inc["cluster_id"]]):
+            cluster_to_incident[int(cid)] = inc["incident_id"]
+
     df["incident_id"] = df["cluster_id"].apply(lambda cid: cluster_to_incident.get(int(cid)) if cid != -1 else None)
 
     print("[6/6] Writing outputs...")
@@ -74,7 +78,9 @@ def run_pipeline(
 
     params = {
         "model": model_name,
+        "algo": algo,
         "eps": eps,
+        "distance_threshold": distance_threshold,
         "min_samples": min_samples,
     }
     if not used_default_window:
@@ -104,9 +110,9 @@ def main():
     ap.add_argument("--algo", choices=["dbscan", "hierarchical", "optics"], default="dbscan", help="Clustering algorithm: dbscan, hierarchical, or optics")
     ap.add_argument("--xi", type=float, default=0.05, help="OPTICS xi steepness threshold (0–1). Only used when --algo optics")
     ap.add_argument("--min-cluster-size", type=int, default=3, help="OPTICS minimum cluster size. Only used when --algo optics")
-    ap.add_argument("--dist-threshold", type=float, default=0.25, help="Hierarchical clustering distance threshold (cosine distance). Only used when --algo hierarchical")
+    ap.add_argument("--dist-threshold", type=float, default=0.35, help="Hierarchical clustering distance threshold (cosine distance). Only used when --algo hierarchical")
     ap.add_argument("--window-min", type=int, default=None, help="Candidate grouping time window in minutes")
-    ap.add_argument("--eps", type=float, default=0.25, help="DBSCAN eps (cosine distance)")
+    ap.add_argument("--eps", type=float, default=0.35, help="DBSCAN eps (cosine distance)")
     ap.add_argument("--min-samples", type=int, default=3, help="DBSCAN min_samples")
     args = ap.parse_args()
 

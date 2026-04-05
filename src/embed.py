@@ -7,7 +7,7 @@ import hashlib
 import numpy as np
 from pathlib import Path
 
-DEFAULT_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
+DEFAULT_MODEL_NAME = "sentence-transformers/all-MiniLM-L12-v2"
 
 def _project_cache_dir() -> str:
     # <project_root>/hf_cache
