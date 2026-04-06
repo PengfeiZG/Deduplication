@@ -7,3 +7,5 @@ __pycache__/
 hf_cache/
 __pycache__/
 *.pyc
+.venv/
+out/
