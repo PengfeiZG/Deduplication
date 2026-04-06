@@ -618,14 +618,16 @@ if not uploaded_file:
 
 # ── Run pipeline ──────────────────────────────────────────────────────────────
 if run_btn:
-    # Clean up any previous run's temp directory before starting a new one.
+
     prev_tmp = st.session_state.get("_tmp_dir")
     if prev_tmp and os.path.isdir(prev_tmp):
         import shutil
         shutil.rmtree(prev_tmp, ignore_errors=True)
 
-    # Use a persistent temp dir (NOT a context manager) so the parquet file
-    # remains on disk until the user downloads it or starts the next run.
+    for k in ["_proj_2d", "_proj_method", "_proj_pca_var"]:
+        if k in st.session_state:
+            del st.session_state[k]
+
     tmp = tempfile.mkdtemp(prefix="suricata_gui_")
     st.session_state["_tmp_dir"] = tmp
 
@@ -633,8 +635,7 @@ if run_btn:
     out_dir  = os.path.join(tmp, "out")
     os.makedirs(out_dir)
 
-    # Stream to disk in 256 MB chunks — handles files up to 3 GB without
-    # loading the entire buffer into Python memory at once.
+
     CHUNK = 256 * 1024 * 1024  # 256 MB
     uploaded_file.seek(0)
     with open(eve_path, "wb") as f:
@@ -871,13 +872,13 @@ if st.session_state.results:
                 )
             with col_ctrl2:
                 show_noise_map = st.checkbox("Show noise points", value=True,
-                    help="Alerts with cluster_id = -1 shown as grey dots.")
+                    help="Alerts with incident_id = -1 shown as grey dots.")
             with col_ctrl3:
                 color_by = st.selectbox(
                     "Colour by",
-                    ["cluster_id", "severity", "proto", "category", "src_ip"],
+                    ["Incident ID", "Severity", "Proto", "Category", "Src_ip"],
                     help=(
-                        "cluster_id — one colour per detected cluster.  "
+                        "Incident_id — one colour per detected cluster.  "
                         "severity — red=1 (high) → teal=3 (low).  "
                         "proto — TCP/UDP/etc.  "
                         "category — Suricata alert category.  "
@@ -885,11 +886,12 @@ if st.session_state.results:
                     ),
                 )
 
-            # Re-project if method changed or no cache
-            needs_reproject = (
-                proj_key not in st.session_state
-                or st.session_state.get(proj_method_key) != proj_method
-            )
+
+                needs_reproject = (
+                    proj_key not in st.session_state
+                    or st.session_state.get(proj_method_key) != proj_method
+                    or len(st.session_state.get(proj_key, [])) != len(df)
+                )
 
             if needs_reproject:
                 with st.spinner(f"Projecting {len(embeddings):,} embeddings with {proj_method}…"):
@@ -1021,42 +1023,41 @@ if st.session_state.results:
                 # This fixes the bug where color_discrete_map was computed
                 # but never applied to the actual Scattergl traces.
 
-                if color_by == "severity":
+                if color_by == "Severity":
                     SEV_COLORS = {
-                        "1": "#E63946",  # red    — critical
-                        "2": "#F4A261",  # orange — high
-                        "3": "#2EC4B6",  # teal   — medium (not green to avoid "safe" signal)
-                        "4": "#A8DADC",  # ice    — low/info
-                        "?": "#3a4a50",  # dim    — unknown
+                        "1": "#E63946",
+                        "2": "#F4A261",
+                        "3": "#2EC4B6",
+                        "4": "#A8DADC",
+                        "?": "#3a4a50",
                     }
                     plot_df["_sev_key"] = plot_df["severity"].fillna("?").astype(str)
                     trace_groups = [
                         (key, f"Severity {key}", SEV_COLORS.get(key, "#888888"),
-                         plot_df[(~plot_df["is_noise"]) & (plot_df["_sev_key"] == key)])
+                        plot_df[(~plot_df["is_noise"]) & (plot_df["_sev_key"] == key)])
                         for key in ["1", "2", "3", "4", "?"]
                         if (plot_df["_sev_key"] == key).any()
                     ]
 
-                elif color_by == "proto":
+                elif color_by == "Proto":
                     plot_df["_proto_key"] = plot_df["proto"].fillna("unknown").str.upper()
                     unique_protos = sorted(plot_df["_proto_key"].unique())
                     trace_groups = [
                         (proto, proto, _get_color(i),
-                         plot_df[(~plot_df["is_noise"]) & (plot_df["_proto_key"] == proto)])
+                        plot_df[(~plot_df["is_noise"]) & (plot_df["_proto_key"] == proto)])
                         for i, proto in enumerate(unique_protos)
                     ]
 
-                elif color_by == "category":
+                elif color_by == "Category":
                     plot_df["_cat_key"] = plot_df["category"].fillna("(none)").astype(str)
                     unique_cats = sorted(plot_df["_cat_key"].unique())
                     trace_groups = [
                         (cat, cat, _get_color(i),
-                         plot_df[(~plot_df["is_noise"]) & (plot_df["_cat_key"] == cat)])
+                        plot_df[(~plot_df["is_noise"]) & (plot_df["_cat_key"] == cat)])
                         for i, cat in enumerate(unique_cats)
                     ]
 
-                elif color_by == "src_ip":
-                    # Top 15 source IPs get their own colour; the rest become "other"
+                elif color_by == "Src_ip":
                     top_ips = (
                         plot_df[~plot_df["is_noise"]]["src_ip"]
                         .value_counts()
@@ -1069,24 +1070,31 @@ if st.session_state.results:
                     ordered = top_ips + (["other"] if "other" in plot_df["_ip_key"].values else [])
                     trace_groups = [
                         (ip, ip, _get_color(i) if ip != "other" else "#2a3a44",
-                         plot_df[(~plot_df["is_noise"]) & (plot_df["_ip_key"] == ip)])
+                        plot_df[(~plot_df["is_noise"]) & (plot_df["_ip_key"] == ip)])
                         for i, ip in enumerate(ordered)
                         if len(plot_df[(~plot_df["is_noise"]) & (plot_df["_ip_key"] == ip)]) > 0
                     ]
 
-                else:  # cluster_id (default)
-                    # Label by cluster number, colour by cluster index.
-                    # incident_id mode is separate — do NOT use incident_id here
-                    # or both views look identical.
-                    trace_groups = [
-                        (
-                            f"CL-{cid}",            # key
-                            f"Cluster {cid}",        # legend label — cluster number, not incident
-                            _get_color(i),
-                            plot_df[(~plot_df["is_noise"]) & (plot_df["cluster_id"] == cid)],
-                        )
-                        for i, cid in enumerate(unique_clusters)
+                else:  # Incident ID
+                    trace_groups = []
+
+                    incident_order = [
+                        inc["incident_id"]
+                        for inc in incidents
+                        if inc["incident_id"] in set(plot_df["incident_id"].dropna())
                     ]
+
+                    for i, inc_id in enumerate(incident_order):
+                        sub = plot_df[(~plot_df["is_noise"]) & (plot_df["incident_id"] == inc_id)]
+                        if len(sub) == 0:
+                            continue
+
+                        trace_groups.append((
+                            inc_id,
+                            inc_id,
+                            _get_color(i),
+                            sub,
+                        ))
 
                 # ── Axis labels & descriptions ────────────────────────────────
                 # Use the method that was *actually* run (stored at projection time),
@@ -1184,6 +1192,9 @@ if st.session_state.results:
                         customdata=sub[["src_ip", "dest_ip", "sig_short", "severity_str", "proto"]].values,
                     ))
 
+                legend_count = len(trace_groups)
+                legend_label = "incidents" if color_by == "Incident ID" else "groups"
+
                 fig.update_layout(
                     paper_bgcolor="#0a0c10",
                     plot_bgcolor="#080b0f",
@@ -1221,14 +1232,14 @@ if st.session_state.results:
                         borderwidth=1,
                         font=dict(size=10, color="#7a8799"),
                         itemsizing="constant",
-                        title=dict(text="INCIDENT / CLUSTER", font=dict(size=10, color="#3d5066")),
+                        title=dict(text="Incident ID", font=dict(size=10, color="#3d5066")),
                     ),
                     title=dict(
                         text=(
                             f"{st.session_state.get(proj_method_key, proj_method)} projection  ·  "
                             f"{len(clustered_df):,} clustered  ·  "
                             f"{len(noise_df):,} noise  ·  "
-                            f"{len(unique_clusters)} clusters"
+                            f"{legend_count} {legend_label}"
                         ),
                         font=dict(size=12, color="#3d5066", family="IBM Plex Mono"),
                         x=0.01,

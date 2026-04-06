@@ -63,3 +63,37 @@ Manual incident spot checks (must do)
 
     Use the helper in viz.py:
         show_incident_example(df, incident_id, k=12)
+
+
+
+
+Why same-color dots are NOT always physically together
+This part is very important.
+The short answer:
+The map is showing semantic similarity between alerts, not “incident membership geometry.”
+The color = incident label
+The position = embedding projection
+Those are two different things.
+So same-color points can appear in multiple places.
+
+
+
+
+
+
+Beginner-friendly explanation 
+
+Each color is one attack story.
+The dots do not need to touch physically because the map shows alert similarity at the alert level.
+If the same attack evolves in phases, targets different hosts, or changes techniques, it may appear as several nearby groups with the same color.
+The shared color tells us the engine stitched them into one incident.
+
+That makes the spread-out points feel intentional instead of confusing.
+Why this is actually better than forcing one cluster
+Forcing same-color points into one geometric blob would actually make the visualization worse.
+Current map teaches:
+
+same color = same incident
+separate islands = different phases / hosts / stages
+
+That is how real attacks behave.
