@@ -84,7 +84,7 @@ st.markdown(
     html, body, [class*="css"] {
         font-family: 'IBM Plex Sans', sans-serif;
         background-color: #0a0c10;
-        color: #c8d0db;
+        color: #f5f7fa;
     }
 
     /* Streamlit app background */
@@ -129,7 +129,7 @@ st.markdown(
     .main-subheader {
         font-family: 'IBM Plex Mono', monospace;
         font-size: 0.78rem;
-        color: #3d5066;
+        color: #f5f7fa;
         letter-spacing: 0.16em;
         text-transform: uppercase;
         margin-bottom: 24px;
@@ -171,7 +171,7 @@ st.markdown(
     .section-label {
         font-family: 'IBM Plex Mono', monospace;
         font-size: 0.72rem;
-        color: #3d5066;
+        color: #f5f7fa;
         letter-spacing: 0.2em;
         text-transform: uppercase;
         border-bottom: 1px solid #1a2028;
@@ -315,6 +315,8 @@ st.markdown(
 
     /* Alerts / warnings */
     .stAlert { border-radius: 2px !important; }
+
+    
     </style>
     """,
     unsafe_allow_html=True,
@@ -901,7 +903,7 @@ if st.session_state.results:
 
                         if proj_method == "UMAP":
                             import umap
-                            reducer = umap.UMAP(n_components=2, random_state=42, metric="cosine")
+                            reducer = umap.UMAP(n_components=2, n_neighbors=10, min_dist=0.3, random_state=42, metric="cosine")
                             coords = reducer.fit_transform(embeddings)
 
                         elif proj_method == "t-SNE":
