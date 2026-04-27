@@ -1,6 +1,6 @@
 # ⚡ Suricata Alert Clustering
 
-> AI-driven alert deduplication and incident synthesis for Security Operations Centres.  
+> AI-driven alert deduplication and incident clustering for Security Operations Centres.  
 > Converts raw Suricata `eve.json` streams into prioritised, analyst-ready incidents — with no custom model training required.
 
 ---
