@@ -1,11 +1,11 @@
 # ⚡ Suricata Alert Clustering
 
 > AI-driven alert deduplication and incident clustering for Security Operations Centres.  
-> Converts raw Suricata `eve.json` streams into prioritised, analyst-ready incidents — with no custom model training required.
+> Converts raw Suricata `eve.json` streams into prioritised and analyst-ready incidents with no custom model training required.
 
 ---
 
-## Results at a Glance
+## Results With Synthetic Data
 
 | Metric | Value |
 |---|---|
@@ -23,7 +23,6 @@
 - [How It Works](#how-it-works)
 - [Project Structure](#project-structure)
 - [Installation](#installation)
-- [Quickstart](#quickstart)
 - [Streamlit Dashboard](#streamlit-dashboard)
 - [Pipeline Parameters](#pipeline-parameters)
 - [Clustering Algorithms](#clustering-algorithms)
@@ -37,10 +36,10 @@
 
 ## Overview
 
-Modern IDS deployments like Suricata generate hundreds of thousands of alerts per day. The vast majority are duplicate events from the same underlying attack campaign. This project uses **semantic embedding + unsupervised clustering** to automatically group related alerts into coherent incident cases, reducing analyst triage workload by orders of magnitude.
+Modern IDS deployments like Suricata generate hundreds of thousands of alerts per day. The vast majority are duplicate events from the same underlying attack campaign. This project uses **semantic embedding + unsupervised clustering** to automatically group related alerts into coherent incident cases that would reduce analyst triage workload by orders of magnitude.
 
 **No labelled training data. No custom model training. No infrastructure overhaul.**  
-The system uses a pre-trained `sentence-transformers` model from Hugging Face as-is, and runs end-to-end on a single machine.
+The system uses a pre-trained `sentence-transformers/all-MiniLM-L6-v2 ` model from Hugging Face as-is, and runs end-to-end on a single machine.
 
 ---
 
@@ -50,32 +49,32 @@ The system uses a pre-trained `sentence-transformers` model from Hugging Face as
 eve.json
    │
    ▼
-[1] Parse & Normalize        parse_suricata.py
+[1] Parse & Normalize (parse_suricata.py)
     Extract fields: timestamp, src_ip, dest_ip,
     ports, protocol, signature, category, severity
 
    ▼
-[2] Feature Engineering      build_text.py
+[2] Feature Engineering (build_text.py)
     Convert each alert to a structured text token string
     e.g. "SIG=ET BRUTE_FORCE SSH ... CAT=... SEV=2 PROTO=TCP DST_PORT=22"
 
    ▼
-[3] Candidate Grouping       cluster.py
+[3] Candidate Grouping (cluster.py)
     Group alerts by src_ip + 30-minute time window
     (limits clustering scope — avoids O(n²) comparisons)
 
    ▼
-[4] Semantic Embedding       embed.py
+[4] Semantic Embedding (embed.py)
     Encode alert text → 384-dim vectors via MiniLM-L12-v2
     Results cached to disk by SHA-256 hash
 
    ▼
-[5] Clustering               cluster.py
+[5] Clustering (cluster.py)
     Run DBSCAN / Hierarchical / OPTICS on cosine-distance
     embeddings within each candidate group
 
    ▼
-[6] Incident Synthesis       incidents.py
+[6] Incident Synthesis (incidents.py)
     Assign family labels, risk scores, and natural-language
     summaries. Optionally stitch related clusters into
     unified long-running incidents.
@@ -118,8 +117,8 @@ alerts_clustered.parquet  +  incidents.json  +  run_stats.json
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/suricata-alert-clustering.git
-cd suricata-alert-clustering
+git clone https://github.com/PengfeiZG/Deduplication.git
+cd Deduplication
 
 # 2. Create a virtual environment
 python -m venv .venv
@@ -148,26 +147,6 @@ umap-learn>=0.5          # Optional — for UMAP projection in dashboard
 
 ---
 
-## Quickstart
-
-### CLI — run the full pipeline
-
-```bash
-# Run on the small test dataset
-python -m pipeline --eve test_data/test_eve.json --out out/
-
-# Run on the large test dataset
-python -m pipeline --eve test_data/large_test_eve.json --out out/
-
-# Custom parameters
-python -m pipeline \
-  --eve /path/to/eve.json \
-  --out out/ \
-  --algo dbscan \
-  --eps 0.35 \
-  --min-samples 5 \
-  --window-min 30
-```
 
 ### Launch the Streamlit dashboard
 
@@ -209,7 +188,7 @@ maxMessageSize = 1024
 |---|---|---|
 | `--eve` | *(required)* | Path to Suricata `eve.json` log file |
 | `--out` | `out/` | Output directory |
-| `--model` | `all-MiniLM-L12-v2` | Hugging Face sentence transformer model |
+| `--model` | `all-MiniLM-L6-v2` | Hugging Face sentence transformer model |
 | `--algo` | `dbscan` | Clustering algorithm: `dbscan`, `hierarchical`, `optics` |
 | `--eps` | `0.35` | DBSCAN cosine distance threshold |
 | `--min-samples` | `5` | Minimum alerts to form a cluster |
@@ -231,7 +210,7 @@ python -m pipeline --eve eve.json --algo dbscan --eps 0.35 --min-samples 5
 ```
 
 ### Hierarchical (Agglomerative)
-Average-linkage clustering with a cosine distance threshold. Produces no explicit noise label — all alerts are assigned a cluster, with small clusters post-processed out by `min_samples`.
+Average-linkage clustering with a cosine distance threshold. Produces no explicit noise label and all alerts are assigned a cluster, with small clusters post-processed out by `min_samples`.
 
 ```bash
 python -m pipeline --eve eve.json --algo hierarchical --dist-threshold 0.35 --min-samples 5
@@ -247,13 +226,6 @@ python -m pipeline --eve eve.json --algo optics --xi 0.05 --min-cluster-size 5
 ---
 
 ## Test Data
-
-Two synthetic `eve.json` files are included for validation:
-
-### `test_eve.json` — Small dataset
-- **965 alerts** · **9 campaigns** · **~280 noise alerts**
-- Campaigns: SSH brute-force, RDP brute-force, Nmap scan, ICMP sweep, Log4Shell, SQL injection, Cobalt Strike C2, SMB lateral movement, DNS tunnelling
-- Expected result: **9 incidents**
 
 ### `large_test_eve.json` — Large dataset
 - **100,000 alerts** · **20 campaigns** · **~21,000 noise alerts**
@@ -344,19 +316,16 @@ Pipeline summary statistics.
 
 ### Embedding model
 
-Three pre-trained models are supported out of the box. All are sourced from the official Hugging Face `sentence-transformers` organisation.
+The pre-trained model are supported out of the box. Sourced from the official Hugging Face `sentence-transformers`.
 
 | Model | Dim | Size | Notes |
 |---|---|---|---|
-| `all-MiniLM-L12-v2` *(default)* | 384 | ~130 MB | Best balance of speed and accuracy for short structured text |
 | `all-MiniLM-L6-v2` | 384 | ~90 MB | Faster, slightly lower accuracy |
-| `all-mpnet-base-v2` | 768 | ~420 MB | Highest accuracy, significantly slower |
 
-> **Important:** Switching models invalidates the embedding cache. Delete `hf_cache/embeddings/` before switching, or the pipeline will silently mix embeddings from different models (they have incompatible shapes for mpnet).
 
 ### Tuning the time window
 
-The `--window-min` parameter controls how far apart in time two alerts from the same source IP can be while still being considered for clustering together. Longer windows allow detection of slow, persistent campaigns at the cost of more candidate pairs.
+The `--window-min` parameter controls how far apart in time two alerts from the same source IP can be while still being considered for clustering together. Longer windows allow detection of slow and persistent campaigns at the cost of more candidate pairs.
 
 | Use case | Recommended window |
 |---|---|
@@ -381,11 +350,11 @@ The `--window-min` parameter controls how far apart in time two alerts from the 
 
 ### Why candidate grouping?
 
-Clustering all 100,000 alerts together would require a 100k × 100k distance matrix — computationally infeasible. By pre-filtering on `src_ip + time_window`, each clustering call operates on a few hundred to a few thousand alerts, making the pipeline scale linearly with alert volume.
+Clustering all 100,000 alerts together would require a 100k × 100k distance matrix; computationally infeasible. By pre-filtering on `src_ip + time_window`, each clustering call operates on a few hundred to a few thousand alerts and making the pipeline scale linearly with alert volume.
 
 ### Why remove `SRC_PORT` from alert text?
 
-Source ports are ephemeral — randomised by the OS per connection. Including them in the embedding would cause alerts from the same campaign (same src_ip, same destination, same signature) to appear semantically dissimilar. Only the `SRC_BUCKET` (semantic category: `admin`, `web`, `dns`, `mail`, `smb`, `other`) is retained.
+Source ports are ephemeral; randomised by the OS per connection. Including them in the embedding would cause alerts from the same campaign (same src_ip, same destination, same signature) to appear semantically dissimilar. Only the `SRC_BUCKET` (semantic category: `admin`, `web`, `dns`, `mail`, `smb`, `other`) is retained.
 
 ### Incident stitching
 
@@ -399,7 +368,7 @@ Each alert text is hashed (SHA-256) and its embedding saved as a `.npy` file und
 
 ## Known Limitations
 
-- **Synthetic test data only.** Results on the 100k synthetic dataset are strong. Performance on real-world enterprise telemetry with mixed benign/malicious traffic has not yet been measured.
+- **Synthetic test data only.** Results on the 100k synthetic dataset are strong. Performance on real-world enterprise telemetry with mixed benign/malicious traffic has been tested but not yet truly accurate still.
 - **Single-machine.** The pipeline runs in-process on a single machine. For production-scale (millions of alerts/day), the embedding and clustering stages would need to be distributed.
 - **30-minute window is fixed per run.** Long-duration APT campaigns that are active for hours may be split across multiple candidate group windows and require the stitching layer to reunite them. Very slow campaigns (one alert per hour) will not cluster at all.
 - **UMAP visual ≠ clustering truth.** The UMAP projection is a lossy 2D approximation of 384-dimensional embedding space. Clusters that appear scattered on the map may still be correctly identified by DBSCAN in high-dimensional space.
