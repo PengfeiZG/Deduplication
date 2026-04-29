@@ -3,6 +3,7 @@
 > AI-driven alert deduplication and incident clustering for Security Operations Centres.  
 > Converts raw Suricata `eve.json` streams into prioritised and analyst-ready incidents with no custom model training required.
 
+Note: You can also download the powerpoint to get a better understanding of the project.
 ---
 
 ## Results With Synthetic Data
