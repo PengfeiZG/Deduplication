@@ -313,6 +313,9 @@ st.markdown(
     /* Radio */
     .stRadio label { color: #7a8799 !important; font-size: 0.83rem !important; }
 
+    /* Multiselect chips — neutral, so they don't read as "severity: high" red */
+    .stMultiSelect [data-baseweb="tag"] { background: #1a2530 !important; color: #c8d0db !important; }
+
     /* Alerts / warnings */
     .stAlert { border-radius: 2px !important; }
     </style>
@@ -382,8 +385,8 @@ with st.sidebar:
     st.markdown("---")
     st.markdown("### 🤖 Embedding Model")
 
-    model_name = "sentence-transformers/all-MiniLM-L12-v2"
-    st.markdown("**Embedding model:** all-MiniLM-L12-v2")
+    model_name = "sentence-transformers/all-MiniLM-L6-v2"
+    st.markdown("**Embedding model:** all-MiniLM-L6-v2")
 
     limit = st.number_input("Alert parse limit (0 = all)", min_value=0, value=0, step=500,
         help="Cap alerts for faster debug runs.")
@@ -439,7 +442,7 @@ def render_stat_cards(stats: dict):
     )
 
 
-def render_incident_card(inc: dict):
+def render_incident_card(inc: dict, map_color: Optional[str] = None):
     sev = inc.get("max_severity")
     cls = sev_class(sev)
     _SEV_LABELS = {1: ("sev1", "HIGH"), 2: ("sev2", "MEDIUM"), 3: ("sev3", "LOW"), 4: ("sev4", "UNKNOWN")}
@@ -456,12 +459,14 @@ def render_incident_card(inc: dict):
 
     src_ips = ", ".join(inc["src_ips"][:3]) + ("…" if len(inc["src_ips"]) > 3 else "")
     ports   = ", ".join(map(str, inc["dest_ports"][:6])) + ("…" if len(inc["dest_ports"]) > 6 else "")
+    # Swatch ties the card to its dots on the Cluster Map.
+    swatch = f'<span style="color:{map_color}">● </span>' if map_color else ""
 
     st.markdown(
         f"""
         <div class="incident-card {cls}">
           <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <span class="inc-id">{inc['incident_id']}</span>
+            <span class="inc-id">{swatch}{inc['incident_id']}</span>
             <span>{sev_badge} <span class="inc-badge">{alert_count} alerts</span></span>
           </div>
           <div class="inc-summary">{inc['summary']}</div>
@@ -624,7 +629,7 @@ if run_btn:
         import shutil
         shutil.rmtree(prev_tmp, ignore_errors=True)
 
-    for k in ["_proj_2d", "_proj_method", "_proj_pca_var"]:
+    for k in ["_proj_2d", "_proj_method", "_proj_pca_var", "_hl_slots"]:
         if k in st.session_state:
             del st.session_state[k]
 
@@ -840,8 +845,12 @@ if st.session_state.results:
     # ── Cluster Map tab ───────────────────────────────────────────────────────
     with tab_cluster:
         try:
-            import plotly.express as px
-            import plotly.graph_objects as go
+            # src/ is on sys.path when launched with `streamlit run`; the module
+            # has no relative imports, so it doesn't need the synthetic package.
+            from cluster_map import (
+                COLOR_BY_OPTIONS, HIGHLIGHT_COLORS,
+                assign_slots, build_cluster_map, incident_option, incident_table, top_incidents,
+            )
             has_plotly = True
         except ImportError:
             has_plotly = False
@@ -871,64 +880,82 @@ if st.session_state.results:
                     ),
                 )
             with col_ctrl2:
-                show_noise_map = st.checkbox("Show noise points", value=True,
-                    help="Alerts with incident_id = -1 shown as grey dots.")
+                show_noise_map = st.checkbox("Show unclustered alerts", value=True,
+                    help="Alerts that joined no incident (cluster_id = -1), drawn as hollow rings.")
             with col_ctrl3:
                 color_by = st.selectbox(
                     "Colour by",
-                    ["Incident ID", "Severity", "Proto", "Category", "Src_ip"],
+                    COLOR_BY_OPTIONS,
                     help=(
-                        "Incident_id — one colour per detected cluster.  "
-                        "severity — red=1 (high) → teal=3 (low).  "
-                        "proto — TCP/UDP/etc.  "
-                        "category — Suricata alert category.  "
-                        "src_ip — top 15 source IPs, rest grouped as 'other'."
+                        "Incident — the incidents picked below get a colour, every other incident is grey.  "
+                        "Severity — worst Suricata severity: red = 1 (high), orange = 2 (medium), slate = 3 (low).  "
+                        "Protocol / Category / Source IP — the 3 largest values get a colour, the rest grey.  "
+                        "At most 3 colours are used so they stay distinguishable, including for colour-blind analysts."
                     ),
                 )
 
+            ranked = sorted(incidents, key=lambda i: (-i.get("risk_score", 0), -i["alert_count"]))
+            inc_options = {incident_option(i): i["incident_id"] for i in ranked}
+            default_ids = set(top_incidents(incidents))
+            picked = st.multiselect(
+                "Highlight & label incidents (up to 3)",
+                list(inc_options),
+                default=[o for o, i in inc_options.items() if i in default_ids],
+                max_selections=len(HIGHLIGHT_COLORS),
+                help="Picked incidents are labelled on the map and summarised under it. "
+                     "Listed by risk score; defaults to the 3 highest.",
+            )
+            slots = assign_slots([inc_options[o] for o in picked], st.session_state.get("_hl_slots", {}))
+            st.session_state["_hl_slots"] = slots
 
-                needs_reproject = (
-                    proj_key not in st.session_state
-                    or st.session_state.get(proj_method_key) != proj_method
-                    or len(st.session_state.get(proj_key, [])) != len(df)
-                )
+            needs_reproject = (
+                proj_key not in st.session_state
+                or st.session_state.get(proj_method_key) != proj_method
+                or len(st.session_state.get(proj_key, [])) != len(df)
+            )
 
             if needs_reproject:
                 with st.spinner(f"Projecting {len(embeddings):,} embeddings with {proj_method}…"):
+                    # Identical alerts have identical embeddings. Project each distinct
+                    # embedding once so duplicates land on exactly the same spot (and
+                    # UMAP's neighbour graph isn't swamped by copies), then map back.
+                    uniq, inverse = np.unique(embeddings, axis=0, return_inverse=True)
+                    inverse = inverse.reshape(-1)
                     try:
                         _pca_var = None   # only set for PCA projections
                         _actual_method = proj_method  # track what was actually run
 
                         if proj_method == "UMAP":
                             import umap
-                            reducer = umap.UMAP(n_components=2, random_state=42, metric="cosine")
-                            coords = reducer.fit_transform(embeddings)
+                            reducer = umap.UMAP(n_components=2, random_state=42, metric="cosine",
+                                                n_neighbors=max(2, min(15, len(uniq) - 1)))
+                            coords = reducer.fit_transform(uniq)[inverse]
 
                         elif proj_method == "t-SNE":
                             from sklearn.decomposition import PCA as _PCA
                             from sklearn.manifold import TSNE
-                            pca_init = _PCA(n_components=2).fit_transform(embeddings)
-                            if len(embeddings) > 5000:
-                                # t-SNE is O(n log n); above 5k use PCA and note it clearly
-                                coords = pca_init
+                            if len(uniq) > 5000:
+                                # t-SNE is O(n log n); above 5k distinct alerts use PCA and note it clearly
+                                _pca_model = _PCA(n_components=2).fit(embeddings)
+                                coords = _pca_model.transform(uniq)[inverse]
                                 _actual_method = "PCA"
-                                _pca_var = _PCA(n_components=2).fit(embeddings).explained_variance_ratio_ * 100
+                                _pca_var = _pca_model.explained_variance_ratio_ * 100
                                 st.info(
-                                    f"⚠ Dataset has {len(embeddings):,} alerts — t-SNE would be too slow. "
+                                    f"⚠ Dataset has {len(uniq):,} distinct alerts — t-SNE would be too slow. "
                                     "PCA projection shown instead. Use UMAP for better separation on large datasets."
                                 )
                             else:
                                 coords = TSNE(
                                     n_components=2, random_state=42,
-                                    init="pca", perplexity=30, max_iter=750, 
+                                    init="pca", perplexity=min(30, len(uniq) - 1), max_iter=750,
                                     learning_rate="auto",
                                     method="barnes_hut",
-                                ).fit_transform(embeddings)
+                                ).fit_transform(uniq)[inverse]
 
-                        else:  # PCA
+                        else:  # PCA — fit on every alert so "% of variance" stays per alert
                             from sklearn.decomposition import PCA as _PCA
                             _pca_model = _PCA(n_components=2).fit(embeddings)
-                            coords = _pca_model.transform(embeddings)
+                            coords = _pca_model.transform(uniq)[inverse]
                             _pca_var = _pca_model.explained_variance_ratio_ * 100
 
                         # Store coords, the method that was *actually* run (not
@@ -946,311 +973,60 @@ if st.session_state.results:
                         )
                         from sklearn.decomposition import PCA as _PCA
                         _pca_model = _PCA(n_components=2).fit(embeddings)
-                        coords = _pca_model.transform(embeddings)
-                        st.session_state[proj_key] = coords
+                        st.session_state[proj_key] = _pca_model.transform(uniq)[inverse]
                         st.session_state[proj_method_key] = "PCA"
                         st.session_state["_proj_pca_var"] = _pca_model.explained_variance_ratio_ * 100
 
             coords = st.session_state[proj_key]
 
-            # ── Build plot dataframe ──────────────────────────────────────────
-            plot_df = df.copy().reset_index(drop=True)
-            plot_df["x"] = coords[:, 0]
-            plot_df["y"] = coords[:, 1]
-            plot_df["is_noise"] = plot_df["cluster_id"] == -1
-            plot_df["label"] = plot_df["cluster_id"].apply(
-                lambda c: "noise" if c == -1 else f"cluster {int(c)}"
-            )
-            # Truncate long signatures for hover
-            plot_df["sig_short"] = plot_df["signature"].str[:60]
-            plot_df["cluster_str"] = plot_df["cluster_id"].astype(str)
-            plot_df["severity_str"] = plot_df["severity"].fillna("?").astype(str)
+            # ── Axis labels ───────────────────────────────────────────────────
+            # Use the method that was *actually* run (stored at projection time),
+            # not the radio value — they differ when t-SNE fell back to PCA.
+            _active_method = st.session_state.get(proj_method_key, proj_method)
+            _pca_var = st.session_state.get("_proj_pca_var")
 
-            if not show_noise_map:
-                plot_df = plot_df[~plot_df["is_noise"]].reset_index(drop=True)
-
-            if len(plot_df) == 0:
-                st.info("No points to display — enable noise or run with lower min_samples.")
+            if _active_method == "PCA":
+                if _pca_var is not None:
+                    x_label = f"PC1 · {_pca_var[0]:.1f}% of variance — biggest overall difference between alerts"
+                    y_label = f"PC2 · {_pca_var[1]:.1f}% of variance — second biggest"
+                else:
+                    x_label = "PC1 — primary axis of embedding variance"
+                    y_label = "PC2 — secondary axis of embedding variance"
+                axis_ticks_meaningful = True
             else:
-                # ── Colour mapping ────────────────────────────────────────────
-                NOISE_COLOR = "#1e2a32"
+                x_label = f"{_active_method}-1 (no units — only the distance between dots matters)"
+                y_label = f"{_active_method}-2 (no units)"
+                axis_ticks_meaningful = False
 
-                # 20 maximally distinct hues — chosen by hand to maximise perceptual
-                # distance between every adjacent pair. No two neighbours share the
-                # same hue family. Verified against deuteranopia/protanopia simulations.
-                PALETTE = [
-                    "#E63946",  # 0  vivid red
-                    "#2EC4B6",  # 1  teal       — max dist from red
-                    "#F4A261",  # 2  warm orange
-                    "#457B9D",  # 3  steel blue  — max dist from orange
-                    "#A8DADC",  # 4  ice blue
-                    "#C77DFF",  # 5  violet
-                    "#F9C74F",  # 6  golden yellow
-                    "#06D6A0",  # 7  emerald
-                    "#FF6B6B",  # 8  coral        — diff lightness from red
-                    "#118AB2",  # 9  ocean blue
-                    "#FFB703",  # 10 amber
-                    "#8338EC",  # 11 deep purple   — max dist from amber
-                    "#43AA8B",  # 12 sage green
-                    "#F72585",  # 13 hot pink      — max dist from green
-                    "#90E0EF",  # 14 powder blue
-                    "#FB5607",  # 15 burnt orange
-                    "#B5E48C",  # 16 lime          — light, distinct from emerald
-                    "#6A0572",  # 17 dark magenta  — max dist from lime
-                    "#FFD166",  # 18 light yellow  — diff lightness from amber
-                    "#264653",  # 19 dark teal     — max dist from light yellow
-                ]
-
-                # For >20 clusters generate additional colours via golden-angle HSL
-                # stepping so colours never repeat exactly, just cycle with lightness shift.
-                def _get_color(idx: int) -> str:
-                    if idx < len(PALETTE):
-                        return PALETTE[idx]
-                    import colorsys
-                    golden = 0.618033988749895
-                    hue = (idx * golden) % 1.0
-                    lightness = 0.55 if idx % 2 == 0 else 0.70
-                    r, g, b = colorsys.hls_to_rgb(hue, lightness, 0.85)
-                    return "#{:02x}{:02x}{:02x}".format(int(r*255), int(g*255), int(b*255))
-
-                unique_clusters = sorted(
-                    [c for c in plot_df["cluster_id"].unique() if c != -1]
+            if not show_noise_map and (df["cluster_id"] != -1).sum() == 0:
+                st.info("No points to display — enable unclustered alerts or run with lower min_samples.")
+            else:
+                fig = build_cluster_map(
+                    df, coords, incidents,
+                    color_by=color_by,
+                    slots=slots,
+                    show_noise=show_noise_map,
+                    method=_active_method,
+                    x_title=x_label,
+                    y_title=y_label,
+                    show_ticks=axis_ticks_meaningful,
                 )
-
-                # ── Build per-colour-mode trace groups ────────────────────────
-                # Each mode defines: groups to iterate, label per group,
-                # colour per group, and subset of clustered_df.
-                # This fixes the bug where color_discrete_map was computed
-                # but never applied to the actual Scattergl traces.
-
-                if color_by == "Severity":
-                    SEV_COLORS = {
-                        "1": "#E63946",
-                        "2": "#F4A261",
-                        "3": "#2EC4B6",
-                        "4": "#A8DADC",
-                        "?": "#3a4a50",
-                    }
-                    plot_df["_sev_key"] = plot_df["severity"].fillna("?").astype(str)
-                    trace_groups = [
-                        (key, f"Severity {key}", SEV_COLORS.get(key, "#888888"),
-                        plot_df[(~plot_df["is_noise"]) & (plot_df["_sev_key"] == key)])
-                        for key in ["1", "2", "3", "4", "?"]
-                        if (plot_df["_sev_key"] == key).any()
-                    ]
-
-                elif color_by == "Proto":
-                    plot_df["_proto_key"] = plot_df["proto"].fillna("unknown").str.upper()
-                    unique_protos = sorted(plot_df["_proto_key"].unique())
-                    trace_groups = [
-                        (proto, proto, _get_color(i),
-                        plot_df[(~plot_df["is_noise"]) & (plot_df["_proto_key"] == proto)])
-                        for i, proto in enumerate(unique_protos)
-                    ]
-
-                elif color_by == "Category":
-                    plot_df["_cat_key"] = plot_df["category"].fillna("(none)").astype(str)
-                    unique_cats = sorted(plot_df["_cat_key"].unique())
-                    trace_groups = [
-                        (cat, cat, _get_color(i),
-                        plot_df[(~plot_df["is_noise"]) & (plot_df["_cat_key"] == cat)])
-                        for i, cat in enumerate(unique_cats)
-                    ]
-
-                elif color_by == "Src_ip":
-                    top_ips = (
-                        plot_df[~plot_df["is_noise"]]["src_ip"]
-                        .value_counts()
-                        .head(15)
-                        .index.tolist()
-                    )
-                    plot_df["_ip_key"] = plot_df["src_ip"].apply(
-                        lambda ip: ip if ip in top_ips else "other"
-                    )
-                    ordered = top_ips + (["other"] if "other" in plot_df["_ip_key"].values else [])
-                    trace_groups = [
-                        (ip, ip, _get_color(i) if ip != "other" else "#2a3a44",
-                        plot_df[(~plot_df["is_noise"]) & (plot_df["_ip_key"] == ip)])
-                        for i, ip in enumerate(ordered)
-                        if len(plot_df[(~plot_df["is_noise"]) & (plot_df["_ip_key"] == ip)]) > 0
-                    ]
-
-                else:  # Incident ID
-                    trace_groups = []
-
-                    incident_order = [
-                        inc["incident_id"]
-                        for inc in incidents
-                        if inc["incident_id"] in set(plot_df["incident_id"].dropna())
-                    ]
-
-                    for i, inc_id in enumerate(incident_order):
-                        sub = plot_df[(~plot_df["is_noise"]) & (plot_df["incident_id"] == inc_id)]
-                        if len(sub) == 0:
-                            continue
-
-                        trace_groups.append((
-                            inc_id,
-                            inc_id,
-                            _get_color(i),
-                            sub,
-                        ))
-
-                # ── Axis labels & descriptions ────────────────────────────────
-                # Use the method that was *actually* run (stored at projection time),
-                # not the radio value — they differ when t-SNE fell back to PCA.
-                _active_method = st.session_state.get(proj_method_key, proj_method)
-                _pca_var = st.session_state.get("_proj_pca_var")
-
-                if _active_method == "PCA":
-                    if _pca_var is not None:
-                        x_label = (
-                            f"PC1  ·  {_pca_var[0]:.1f}% of variance explained  "
-                            f"— alerts spread horizontally by their biggest overall difference"
-                        )
-                        y_label = (
-                            f"PC2  ·  {_pca_var[1]:.1f}% of variance explained  "
-                            f"— second biggest difference runs vertically"
-                        )
-                    else:
-                        x_label = "PC1  —  primary axis of embedding variance"
-                        y_label = "PC2  —  secondary axis of embedding variance"
-                    axis_ticks_meaningful = True
-
-                elif _active_method == "UMAP":
-                    x_label = (
-                        "UMAP-1  —  arbitrary scale; "
-                        "dots close together = semantically similar alerts"
-                    )
-                    y_label = (
-                        "UMAP-2  —  arbitrary scale; "
-                        "dots close together = semantically similar alerts"
-                    )
-                    axis_ticks_meaningful = False
-
-                else:  # t-SNE
-                    x_label = (
-                        "t-SNE-1  —  arbitrary scale; "
-                        "focus on cluster shape and separation, not axis values"
-                    )
-                    y_label = (
-                        "t-SNE-2  —  arbitrary scale; "
-                        "focus on cluster shape and separation, not axis values"
-                    )
-                    axis_ticks_meaningful = False
-
-                # ── Scatter plot ──────────────────────────────────────────────
-                # Split noise and clustered for layering (noise underneath)
-                noise_df     = plot_df[plot_df["is_noise"]]
-                clustered_df = plot_df[~plot_df["is_noise"]]
-
-                fig = go.Figure()
-
-                # Noise layer
-                if show_noise_map and len(noise_df) > 0:
-                    fig.add_trace(go.Scattergl(
-                        x=noise_df["x"], y=noise_df["y"],
-                        mode="markers",
-                        name="noise",
-                        marker=dict(
-                            color=NOISE_COLOR,
-                            size=4,
-                            opacity=0.35,
-                            line=dict(width=0),
-                        ),
-                        hovertemplate=(
-                            "<b>NOISE</b><br>"
-                            "src: %{customdata[0]}<br>"
-                            "sig: %{customdata[1]}<br>"
-                            "<extra></extra>"
-                        ),
-                        customdata=noise_df[["src_ip", "sig_short"]].values,
-                    ))
-
-                # Clustered layer — one trace per group so the legend reflects
-                # the chosen colour_by attribute and colours are actually applied.
-                for _key, _label, _color, sub in trace_groups:
-                    if len(sub) == 0:
-                        continue
-                    fig.add_trace(go.Scattergl(
-                        x=sub["x"], y=sub["y"],
-                        mode="markers",
-                        name=str(_label),
-                        marker=dict(
-                            color=_color,
-                            size=7,
-                            opacity=0.88,
-                            line=dict(width=0.6, color="rgba(0,0,0,0.25)"),
-                        ),
-                        hovertemplate=(
-                            f"<b>{_label}</b><br>"
-                            "src: %{customdata[0]} → dst: %{customdata[1]}<br>"
-                            "sig: %{customdata[2]}<br>"
-                            "sev: %{customdata[3]}  proto: %{customdata[4]}<br>"
-                            "<extra></extra>"
-                        ),
-                        customdata=sub[["src_ip", "dest_ip", "sig_short", "severity_str", "proto"]].values,
-                    ))
-
-                legend_count = len(trace_groups)
-                legend_label = "incidents" if color_by == "Incident ID" else "groups"
-
-                fig.update_layout(
-                    paper_bgcolor="#0a0c10",
-                    plot_bgcolor="#080b0f",
-                    font=dict(family="IBM Plex Mono", color="#4a6070", size=11),
-                    margin=dict(l=10, r=10, t=30, b=10),
-                    xaxis=dict(
-                        title=dict(
-                            text=x_label,
-                            font=dict(size=11, color="#4a8090", family="IBM Plex Mono"),
-                        ),
-                        gridcolor="#111820",
-                        zeroline=True,
-                        zerolinecolor="#1a2530",
-                        zerolinewidth=1,
-                        showticklabels=axis_ticks_meaningful,
-                        tickfont=dict(size=9, color="#2a3a4a", family="IBM Plex Mono"),
-                        tickformat=".2f",
-                    ),
-                    yaxis=dict(
-                        title=dict(
-                            text=y_label,
-                            font=dict(size=11, color="#4a8090", family="IBM Plex Mono"),
-                        ),
-                        gridcolor="#111820",
-                        zeroline=True,
-                        zerolinecolor="#1a2530",
-                        zerolinewidth=1,
-                        showticklabels=axis_ticks_meaningful,
-                        tickfont=dict(size=9, color="#2a3a4a", family="IBM Plex Mono"),
-                        tickformat=".2f",
-                    ),
-                    legend=dict(
-                        bgcolor="#0f1318",
-                        bordercolor="#1e2530",
-                        borderwidth=1,
-                        font=dict(size=10, color="#7a8799"),
-                        itemsizing="constant",
-                        title=dict(text="Incident ID", font=dict(size=10, color="#3d5066")),
-                    ),
-                    title=dict(
-                        text=(
-                            f"{st.session_state.get(proj_method_key, proj_method)} projection  ·  "
-                            f"{len(clustered_df):,} clustered  ·  "
-                            f"{len(noise_df):,} noise  ·  "
-                            f"{legend_count} {legend_label}"
-                        ),
-                        font=dict(size=12, color="#3d5066", family="IBM Plex Mono"),
-                        x=0.01,
-                    ),
-                    height=600,
-                )
-
                 st.plotly_chart(fig, use_container_width=True)
 
+                # ── Highlighted incidents, in plain words ────────────────────
+                if slots:
+                    st.markdown('<div class="section-label">Highlighted on the map</div>', unsafe_allow_html=True)
+                    by_id = {i["incident_id"]: i for i in incidents}
+                    for inc_id in sorted(slots, key=slots.get):
+                        render_incident_card(
+                            by_id[inc_id],
+                            map_color=HIGHLIGHT_COLORS[slots[inc_id]] if color_by == "Incident" else None,
+                        )
+
+                with st.expander(f"All {len(incidents)} incidents as a table (highest risk first)"):
+                    st.dataframe(incident_table(incidents), use_container_width=True, hide_index=True)
+
                 # ── Description panel ────────────────────────────────────────
-                _active_method = st.session_state.get(proj_method_key, proj_method)
                 _method_explanations = {
                     "PCA": (
                         "PCA (Principal Component Analysis) rotates the 384-dimensional "
@@ -1259,7 +1035,7 @@ if st.session_state.results:
                         "varied becomes vertical (PC2). "
                         "<b>The tick numbers are real and comparable</b> — a dot at x=2.5 "
                         "is genuinely further along that axis than one at x=0.8. "
-                        "Tight groups of same-colour dots mean those alerts have very "
+                        "Tight groups of dots mean those alerts have very "
                         "similar signatures, ports, and protocols."
                     ),
                     "UMAP": (
@@ -1269,9 +1045,8 @@ if st.session_state.results:
                         "close to which. "
                         "<b>The axis numbers are arbitrary</b> — ignore them. "
                         "What matters: dots that appear close together are semantically "
-                        "similar alerts. A tight island of colour = a strong, coherent "
-                        "cluster. A blob spread across the map = a loose grouping. "
-                        "UMAP gives the most faithful picture of true cluster separation."
+                        "similar alerts. Distances <i>between</i> far-apart islands are "
+                        "only roughly meaningful."
                     ),
                     "t-SNE": (
                         "t-SNE (t-distributed Stochastic Neighbour Embedding) pulls "
@@ -1296,11 +1071,14 @@ if st.session_state.results:
                                     color:#3d5066;letter-spacing:0.12em;text-transform:uppercase;
                                     margin-bottom:6px;">How to read this chart</div>
                         <div style="font-size:0.8rem;color:#7a8da0;line-height:1.55;">
-                          <b style="color:#c8d0db;">Each dot</b> = one alert from your eve.json.<br>
-                          <b style="color:#c8d0db;">Dot colour</b> = the cluster or attribute selected in "Colour by".<br>
-                          <b style="color:#c8d0db;">Proximity</b> = similarity — dots near each other fired for the
-                          same kind of activity (same signature family, port pattern, or protocol).<br>
-                          <b style="color:#2a3a4a;">Grey dots</b> = noise alerts the algorithm couldn't fit into any cluster.
+                          <b style="color:#c8d0db;">Each dot</b> = a stack of alerts that look the same;
+                          a bigger dot = more alerts. Hover any dot to see what it is.<br>
+                          <b style="color:#c8d0db;">Position</b> = what the alert looks like: signature, category,
+                          severity, protocol, destination port, internal vs external host. Nearby dots = similar
+                          alerts. Position does <b>not</b> show who sent the alert or when.<br>
+                          <b style="color:#c8d0db;">Colour</b> = what "Colour by" selects. In the Incident view the
+                          highlighted incidents are coloured and labelled; every other incident is grey.<br>
+                          <b style="color:#c8d0db;">Hollow rings</b> = unclustered alerts that joined no incident.
                         </div>
                       </div>
 
@@ -1320,13 +1098,16 @@ if st.session_state.results:
                                     color:#3d5066;letter-spacing:0.12em;text-transform:uppercase;
                                     margin-bottom:6px;">Patterns to look for</div>
                         <div style="font-size:0.8rem;color:#7a8da0;line-height:1.55;">
-                          <b style="color:#c8d0db;">Tight island</b> = strong, coherent incident (good cluster).<br>
-                          <b style="color:#c8d0db;">Elongated streak</b> = alerts from the same src_ip over time,
-                          with slight signature variation.<br>
-                          <b style="color:#c8d0db;">Two colours mixed</b> = possible cluster over-merge — consider
-                          lowering ε or xi.<br>
-                          <b style="color:#c8d0db;">Scattered noise around a cluster</b> = related activity the
-                          algorithm was uncertain about — try increasing the time window.
+                          <b style="color:#c8d0db;">Tight island of one colour</b> = a coherent incident: many alerts
+                          of the same kind.<br>
+                          <b style="color:#c8d0db;">One colour in several places</b> = one incident made of
+                          different-looking alerts (e.g. a scan, then an exploit). They were linked by source IP and
+                          timing, not by how they look.<br>
+                          <b style="color:#c8d0db;">Two colours on one spot</b> = identical-looking alerts from
+                          different sources or time windows, deliberately kept as separate incidents.<br>
+                          <b style="color:#c8d0db;">Rings next to a cluster</b> = similar alerts that had too few
+                          look-alikes in their own source IP + time window. A longer time window or larger ε may
+                          pull them in.
                         </div>
                       </div>
 
