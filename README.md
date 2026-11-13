@@ -167,7 +167,7 @@ The dashboard provides a full analyst workflow in five tabs:
 |---|---|
 | **Incidents** | Expandable incident cards with all alerts, signatures, timelines, IPs, ports, risk scores, and family labels. Filterable by severity, keyword, sort order. |
 | **Alert Table** | Full clustered alert table with search and noise toggle. |
-| **Cluster Map** | One bubble per incident (sized by alert count, biggest ones named), placed by PCA / UMAP / t-SNE of the alert embeddings. Colour by incident, severity, protocol, category, or source IP. Untick *One bubble per incident* to see every distinct alert. |
+| **Cluster Map** | Semantic map: one bubble per incident (sized by alert count, biggest ones named) with its alerts as small dots. Default *Similarity* layout puts similar attacks close together and places every alert between incidents by how similar it is to each, so a dot between two incidents resembles both. Hover a dot for its two most similar incidents and the exact similarity. PCA / UMAP / t-SNE remain as alternatives. Colour by incident, severity, protocol, category, or source IP. |
 | **Distributions** | Alerts per cluster, top signatures, severity breakdown, top source IPs. |
 | **Download** | Export `alerts_clustered.parquet`, `incidents.json`, and `run_stats.json`. |
 

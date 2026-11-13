@@ -83,55 +83,49 @@ st.markdown(
     /* ── Global ── */
     html, body, [class*="css"] {
         font-family: 'IBM Plex Sans', sans-serif;
-        background-color: #0a0c10;
-        color: #f5f7fa;
+        background-color: #faf5ee;
+        color: #2b2118;
     }
 
     /* Streamlit app background */
     .stApp {
-        background: #0a0c10;
+        background: #faf5ee;
     }
 
     /* Sidebar */
     [data-testid="stSidebar"] {
-        background: #0f1318 !important;
-        border-right: 1px solid #1e2530;
+        background: #f3eadd !important;
+        border-right: 1px solid #e7dccd;
     }
     [data-testid="stSidebar"] .stMarkdown p,
     [data-testid="stSidebar"] label {
-        color: #7a8799 !important;
-        font-size: 0.78rem;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
+        color: #5f5245 !important;
+        font-size: 0.85rem;
     }
     [data-testid="stSidebar"] h3 {
-        color: #e0e8f0 !important;
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 0.9rem;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        border-bottom: 1px solid #1e2530;
+        color: #2b2118 !important;
+        font-family: 'IBM Plex Sans', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        border-bottom: 1px solid #e7dccd;
         padding-bottom: 6px;
         margin-bottom: 12px;
     }
 
     /* Main header */
     .main-header {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 1.6rem;
-        font-weight: 700;
-        color: #00d4ff;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        font-family: 'IBM Plex Sans', sans-serif;
+        font-size: 1.9rem;
+        font-weight: 600;
+        color: #c2410c;
+        letter-spacing: -0.01em;
         line-height: 1.2;
         margin-bottom: 2px;
     }
     .main-subheader {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 0.78rem;
-        color: #f5f7fa;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
+        font-family: 'IBM Plex Sans', sans-serif;
+        font-size: 0.95rem;
+        color: #5f5245;
         margin-bottom: 24px;
     }
 
@@ -143,25 +137,26 @@ st.markdown(
         margin-bottom: 28px;
     }
     .stat-card {
-        background: #0f1318;
-        border: 1px solid #1e2530;
-        border-top: 2px solid #00d4ff;
+        background: #fffdf9;
+        border: 1px solid #e7dccd;
+        border-top: 3px solid #c2410c;
         padding: 16px 18px;
-        border-radius: 2px;
+        border-radius: 10px;
+        box-shadow: 0 1px 2px rgba(80, 50, 20, 0.06), 0 4px 14px rgba(80, 50, 20, 0.05);
     }
-    .stat-card.orange { border-top-color: #FFB800; }   /* amber  */
-    .stat-card.red    { border-top-color: #BF5AF2; }   /* purple */
-    .stat-card.green  { border-top-color: #30D158; }   /* green  */
+    .stat-card.orange { border-top-color: #d08700; }   /* amber  */
+    .stat-card.red    { border-top-color: #a8456b; }   /* purple */
+    .stat-card.green  { border-top-color: #5d8a3a; }   /* green  */
     .stat-val {
         font-family: 'IBM Plex Mono', monospace;
         font-size: 2rem;
         font-weight: 700;
-        color: #e8f0f8;
+        color: #2b2118;
         line-height: 1;
     }
     .stat-label {
         font-size: 0.72rem;
-        color: #4a6070;
+        color: #7c6b5b;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         margin-top: 4px;
@@ -169,12 +164,13 @@ st.markdown(
 
     /* Section labels */
     .section-label {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 0.72rem;
-        color: #f5f7fa;
-        letter-spacing: 0.2em;
+        font-family: 'IBM Plex Sans', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #5f5245;
+        letter-spacing: 0.08em;
         text-transform: uppercase;
-        border-bottom: 1px solid #1a2028;
+        border-bottom: 1px solid #e7dccd;
         padding-bottom: 6px;
         margin-bottom: 16px;
         margin-top: 28px;
@@ -182,63 +178,64 @@ st.markdown(
 
     /* Incident card */
     .incident-card {
-        background: #0f1318;
-        border: 1px solid #1a2530;
-        border-left: 3px solid #00d4ff;
+        background: #fffdf9;
+        border: 1px solid #e7dccd;
+        border-left: 4px solid #c2410c;
         padding: 14px 18px;
-        border-radius: 2px;
+        border-radius: 10px;
         margin-bottom: 10px;
+        box-shadow: 0 1px 2px rgba(80, 50, 20, 0.06);
     }
-    .incident-card.sev-high   { border-left-color: #ff2d55; }   /* vivid red        */
-    .incident-card.sev-medium { border-left-color: #ffb800; }   /* vivid amber       */
-    .incident-card.sev-low    { border-left-color: #30d158; }   /* vivid green       */
-    .incident-card.sev-info   { border-left-color: #64d2ff; }   /* sky blue          */
+    .incident-card.sev-high   { border-left-color: #b91c1c; }   /* vivid red        */
+    .incident-card.sev-medium { border-left-color: #d08700; }   /* vivid amber       */
+    .incident-card.sev-low    { border-left-color: #5d8a3a; }   /* vivid green       */
+    .incident-card.sev-info   { border-left-color: #64748b; }   /* sky blue          */
     .inc-id {
         font-family: 'IBM Plex Mono', monospace;
         font-size: 0.85rem;
         font-weight: 700;
-        color: #00d4ff;
+        color: #c2410c;
         letter-spacing: 0.08em;
     }
     .inc-summary {
         font-size: 0.88rem;
-        color: #8a9db0;
+        color: #5f5245;
         margin-top: 5px;
         line-height: 1.5;
     }
     .inc-meta {
         font-family: 'IBM Plex Mono', monospace;
         font-size: 0.72rem;
-        color: #3d5066;
+        color: #7c6b5b;
         margin-top: 8px;
         display: flex;
         gap: 20px;
     }
     .inc-badge {
         display: inline-block;
-        background: #1a2530;
-        color: #4a8fa8;
+        background: #f1e5d6;
+        color: #8a4b2f;
         font-family: 'IBM Plex Mono', monospace;
         font-size: 0.68rem;
         padding: 2px 7px;
-        border-radius: 2px;
+        border-radius: 10px;
         margin-right: 4px;
         letter-spacing: 0.06em;
     }
-    .inc-badge.sev1  { background: #2d1018; color: #ff2d55; }   /* red   — sev 1    */
-    .inc-badge.sev2  { background: #2d2000; color: #ffb800; }   /* amber — sev 2    */
-    .inc-badge.sev3  { background: #0d2018; color: #30d158; }   /* green — sev 3    */
-    .inc-badge.sev4  { background: #0d1e28; color: #64d2ff; }   /* blue  — sev 4    */
+    .inc-badge.sev1  { background: #fbe4df; color: #b91c1c; }   /* red   — sev 1    */
+    .inc-badge.sev2  { background: #fbeccb; color: #8a5a00; }   /* amber — sev 2    */
+    .inc-badge.sev3  { background: #e6f0d9; color: #3f6212; }   /* green — sev 3    */
+    .inc-badge.sev4  { background: #e6eaef; color: #475569; }   /* blue  — sev 4    */
 
     /* Pipeline log */
     .log-box {
-        background: #080b0f;
-        border: 1px solid #1a2028;
-        border-radius: 2px;
+        background: #f4ece1;
+        border: 1px solid #e7dccd;
+        border-radius: 10px;
         padding: 14px 16px;
         font-family: 'IBM Plex Mono', monospace;
         font-size: 0.78rem;
-        color: #4a8060;
+        color: #5b6b3f;
         max-height: 260px;
         overflow-y: auto;
         white-space: pre-wrap;
@@ -247,40 +244,38 @@ st.markdown(
 
     /* Upload zone */
     [data-testid="stFileUploader"] {
-        border: 1px dashed #1e2e3a !important;
-        border-radius: 2px !important;
-        background: #080b0f !important;
+        border: 1px dashed #d9cbb8 !important;
+        border-radius: 10px !important;
+        background: #f4ece1 !important;
     }
 
     /* Buttons */
     .stButton > button {
-        font-family: 'IBM Plex Mono', monospace !important;
-        font-size: 0.82rem !important;
-        letter-spacing: 0.1em !important;
-        text-transform: uppercase !important;
-        background: #00d4ff !important;
-        color: #000 !important;
+        font-family: 'IBM Plex Sans', sans-serif !important;
+        font-size: 0.9rem !important;
+        background: #c2410c !important;
+        color: #ffffff !important;
         border: none !important;
-        border-radius: 2px !important;
+        border-radius: 10px !important;
         padding: 10px 24px !important;
         font-weight: 700 !important;
         transition: background 0.15s;
     }
     .stButton > button:hover {
-        background: #00b8e0 !important;
+        background: #9a3412 !important;
     }
     .stButton > button:disabled {
-        background: #1a2530 !important;
-        color: #3d5066 !important;
+        background: #e7dccd !important;
+        color: #7c6b5b !important;
     }
 
     /* Slider and number input */
-    .stSlider > div > div > div { background: #00d4ff !important; }
+    .stSlider > div > div > div { background: #c2410c !important; }
 
     /* Dataframe */
     [data-testid="stDataFrame"] {
-        border: 1px solid #1a2530 !important;
-        border-radius: 2px !important;
+        border: 1px solid #e7dccd !important;
+        border-radius: 10px !important;
     }
 
     /* Expander */
@@ -288,36 +283,35 @@ st.markdown(
         font-family: 'IBM Plex Mono', monospace !important;
         font-size: 0.8rem !important;
         letter-spacing: 0.08em !important;
-        color: #4a6070 !important;
-        background: #0f1318 !important;
+        color: #7c6b5b !important;
+        background: #fffdf9 !important;
     }
 
     /* Tab */
     .stTabs [data-baseweb="tab"] {
-        font-family: 'IBM Plex Mono', monospace;
-        font-size: 0.78rem;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: #3d5066;
+        font-family: 'IBM Plex Sans', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #7c6b5b;
     }
     .stTabs [aria-selected="true"] {
-        color: #00d4ff !important;
-        border-bottom: 2px solid #00d4ff !important;
+        color: #c2410c !important;
+        border-bottom: 2px solid #c2410c !important;
     }
 
     div[data-testid="stMetricValue"] {
         font-family: 'IBM Plex Mono', monospace;
-        color: #e0e8f0;
+        color: #2b2118;
     }
 
     /* Radio */
-    .stRadio label { color: #7a8799 !important; font-size: 0.83rem !important; }
+    .stRadio label { color: #5f5245 !important; font-size: 0.83rem !important; }
 
     /* Multiselect chips — neutral, so they don't read as "severity: high" red */
-    .stMultiSelect [data-baseweb="tag"] { background: #1a2530 !important; color: #c8d0db !important; }
+    .stMultiSelect [data-baseweb="tag"] { background: #e7dccd !important; color: #2b2118 !important; }
 
     /* Alerts / warnings */
-    .stAlert { border-radius: 2px !important; }
+    .stAlert { border-radius: 10px !important; }
 
     
     </style>
@@ -611,12 +605,11 @@ if "results" not in st.session_state:
 if not uploaded_file:
     st.markdown(
         """
-        <div style="background:#0f1318; border:1px dashed #1e2e3a; border-radius:2px;
+        <div style="background:#fffdf9; border:1px dashed #d9cbb8; border-radius: 10px;
                     padding:40px; text-align:center; margin-top:20px;">
-          <div style="font-family:'IBM Plex Mono',monospace; color:#2a4055;
-                      font-size:0.9rem; letter-spacing:0.12em; text-transform:uppercase;">
+          <div style="font-family:'IBM Plex Sans',sans-serif; color:#5f5245; font-size:1rem; line-height:1.7;">
             Upload an eve.json file and configure the pipeline in the sidebar,<br>
-            then click <strong style="color:#3d6080">▶ Run Pipeline</strong> to begin.
+            then click <strong style="color:#c2410c">▶ Run Pipeline</strong> to begin.
           </div>
         </div>
         """,
@@ -780,7 +773,7 @@ if st.session_state.results:
             # else "Time (asc)" — already sorted by time from build_incidents
 
             st.markdown(
-                f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.72rem;color:#3d5066;margin-bottom:12px;">'
+                f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.72rem;color:#7c6b5b;margin-bottom:12px;">'
                 f'SHOWING {len(filtered)} / {len(incidents)} INCIDENTS</div>',
                 unsafe_allow_html=True,
             )
@@ -836,7 +829,7 @@ if st.session_state.results:
             disp = disp[text_mask | num_mask]
 
         st.markdown(
-            f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.72rem;color:#3d5066;margin-bottom:8px;">'
+            f'<div style="font-family:IBM Plex Mono,monospace;font-size:0.72rem;color:#7c6b5b;margin-bottom:8px;">'
             f'{len(disp):,} alerts displayed</div>',
             unsafe_allow_html=True,
         )
@@ -852,7 +845,8 @@ if st.session_state.results:
             # has no relative imports, so it doesn't need the synthetic package.
             from cluster_map import (
                 COLOR_BY_OPTIONS, HIGHLIGHT_COLORS,
-                assign_slots, build_cluster_map, incident_option, incident_table, top_incidents,
+                assign_slots, build_cluster_map, incident_option, incident_table, semantic_layout,
+                top_incidents,
             )
             has_plotly = True
         except ImportError:
@@ -874,11 +868,14 @@ if st.session_state.results:
             with col_ctrl1:
                 proj_method = st.radio(
                     "Projection method",
-                    ["PCA", "UMAP", "t-SNE"],
+                    ["Similarity", "PCA", "UMAP", "t-SNE"],
                     horizontal=True,
                     help=(
-                        "PCA: instant, linear, and keeps real distances — incidents that are "
-                        "far apart on the map really are different. Best default for alerts. "
+                        "Similarity (default): incidents are spread so similar attacks sit close, and each "
+                        "alert is placed between them by how similar it is to each — a dot halfway between "
+                        "two incidents resembles both; a dot nearer one resembles that one more. "
+                        "The most faithful layout for reading meaning off the map. "
+                        "PCA: instant, linear; shows the two biggest directions of variation only. "
                         "UMAP / t-SNE: stretch every dense patch to fill space, so a port scan "
                         "(one distinct alert per port) takes over the map and everything else "
                         "collapses into one pile. Useful only for zooming into local structure."
@@ -934,7 +931,15 @@ if st.session_state.results:
                         _pca_var = None   # only set for PCA projections
                         _actual_method = proj_method  # track what was actually run
 
-                        if proj_method == "UMAP":
+                        # Exact "most similar incidents" for the hover text, whatever the projection.
+                        coords, st.session_state["_closest"] = semantic_layout(df, embeddings)
+                        if proj_method == "Similarity" and coords is None:
+                            proj_method = _actual_method = "PCA"   # needs 3+ incidents to lay out
+
+                        if proj_method == "Similarity":
+                            pass
+
+                        elif proj_method == "UMAP":
                             import umap
                             reducer = umap.UMAP(n_components=2, random_state=42, metric="cosine",
                                                 n_neighbors=max(2, min(15, len(uniq) - 1)))
@@ -1020,6 +1025,7 @@ if st.session_state.results:
                     y_title=y_label,
                     show_ticks=axis_ticks_meaningful and not by_incident,
                     by_incident=by_incident,
+                    closest=st.session_state.get("_closest"),
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
@@ -1048,6 +1054,17 @@ if st.session_state.results:
                         "Tight groups of dots mean those alerts have very "
                         "similar signatures, ports, and protocols."
                     ),
+                    "Similarity": (
+                        "Each incident's meaning is the average embedding of its alerts. "
+                        "The incidents are spread out so that <b>map distance tracks how "
+                        "different their meaning is</b>, then every alert is placed between "
+                        "them in proportion to its similarity to each. A dot sitting on an "
+                        "incident is typical of it; a dot between two incidents resembles "
+                        "both; a dot nearer one is more related to that one. "
+                        "<b>The axis numbers are arbitrary</b>. No flat picture of 384 "
+                        "dimensions is exact, so hover a dot for its two most similar "
+                        "incidents with the exact similarity percentages."
+                    ),
                     "UMAP": (
                         "UMAP (Uniform Manifold Approximation and Projection) learns the "
                         "local neighbourhood structure of the 384-dimensional embedding "
@@ -1075,47 +1092,48 @@ if st.session_state.results:
                     f"""
                     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px;">
 
-                      <div style="background:#0f1318;border:1px solid #1a2530;border-top:2px solid #00d4ff;
-                                  padding:12px 14px;border-radius:2px;">
+                      <div style="background:#fffdf9;border:1px solid #e7dccd;border-top:2px solid #c2410c;
+                                  padding:12px 14px;border-radius: 10px;">
                         <div style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;
-                                    color:#3d5066;letter-spacing:0.12em;text-transform:uppercase;
+                                    color:#7c6b5b;letter-spacing:0.12em;text-transform:uppercase;
                                     margin-bottom:6px;">How to read this chart</div>
-                        <div style="font-size:0.8rem;color:#7a8da0;line-height:1.55;">
-                          <b style="color:#c8d0db;">Each dot</b> = a stack of alerts that look the same;
-                          a bigger dot = more alerts. Hover any dot to see what it is.<br>
-                          <b style="color:#c8d0db;">Position</b> = what the alert looks like: signature, category,
+                        <div style="font-size:0.8rem;color:#5f5245;line-height:1.55;">
+                          <b style="color:#2b2118;">Each bubble</b> = one incident, bigger = more alerts.
+                          <b style="color:#2b2118;">Each small dot</b> = alerts that look the same. Hover a dot
+                          to see what it is and which incidents it is most similar to.<br>
+                          <b style="color:#2b2118;">Position</b> = what the alert looks like: signature, category,
                           severity, protocol, destination port, internal vs external host. Nearby dots = similar
                           alerts. Position does <b>not</b> show who sent the alert or when.<br>
-                          <b style="color:#c8d0db;">Colour</b> = what "Colour by" selects. In the Incident view the
+                          <b style="color:#2b2118;">Colour</b> = what "Colour by" selects. In the Incident view the
                           highlighted incidents are coloured and labelled; every other incident is grey.<br>
-                          <b style="color:#c8d0db;">Hollow rings</b> = unclustered alerts that joined no incident.
+                          <b style="color:#2b2118;">Hollow rings</b> = unclustered alerts that joined no incident.
                         </div>
                       </div>
 
-                      <div style="background:#0f1318;border:1px solid #1a2530;border-top:2px solid #FFB800;
-                                  padding:12px 14px;border-radius:2px;">
+                      <div style="background:#fffdf9;border:1px solid #e7dccd;border-top:2px solid #d08700;
+                                  padding:12px 14px;border-radius: 10px;">
                         <div style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;
-                                    color:#3d5066;letter-spacing:0.12em;text-transform:uppercase;
+                                    color:#7c6b5b;letter-spacing:0.12em;text-transform:uppercase;
                                     margin-bottom:6px;">What the axes mean — {_active_method}</div>
-                        <div style="font-size:0.8rem;color:#7a8da0;line-height:1.55;">
+                        <div style="font-size:0.8rem;color:#5f5245;line-height:1.55;">
                           {_method_desc}
                         </div>
                       </div>
 
-                      <div style="background:#0f1318;border:1px solid #1a2530;border-top:2px solid #00e87a;
-                                  padding:12px 14px;border-radius:2px;">
+                      <div style="background:#fffdf9;border:1px solid #e7dccd;border-top:2px solid #5d8a3a;
+                                  padding:12px 14px;border-radius: 10px;">
                         <div style="font-family:'IBM Plex Mono',monospace;font-size:0.68rem;
-                                    color:#3d5066;letter-spacing:0.12em;text-transform:uppercase;
+                                    color:#7c6b5b;letter-spacing:0.12em;text-transform:uppercase;
                                     margin-bottom:6px;">Patterns to look for</div>
-                        <div style="font-size:0.8rem;color:#7a8da0;line-height:1.55;">
-                          <b style="color:#c8d0db;">Tight island of one colour</b> = a coherent incident: many alerts
+                        <div style="font-size:0.8rem;color:#5f5245;line-height:1.55;">
+                          <b style="color:#2b2118;">Tight island of one colour</b> = a coherent incident: many alerts
                           of the same kind.<br>
-                          <b style="color:#c8d0db;">One colour in several places</b> = one incident made of
+                          <b style="color:#2b2118;">One colour in several places</b> = one incident made of
                           different-looking alerts (e.g. a scan, then an exploit). They were linked by source IP and
                           timing, not by how they look.<br>
-                          <b style="color:#c8d0db;">Two colours on one spot</b> = identical-looking alerts from
+                          <b style="color:#2b2118;">Two colours on one spot</b> = identical-looking alerts from
                           different sources or time windows, deliberately kept as separate incidents.<br>
-                          <b style="color:#c8d0db;">Rings next to a cluster</b> = similar alerts that had too few
+                          <b style="color:#2b2118;">Rings next to a cluster</b> = similar alerts that had too few
                           look-alikes in their own source IP + time window. A longer time window or larger ε may
                           pull them in.
                         </div>
@@ -1152,14 +1170,14 @@ if st.session_state.results:
                     cluster_counts.head(40),
                     x="cluster_id", y="count",
                     template="plotly_dark",
-                    color_discrete_sequence=["#2196F3"],
+                    color_discrete_sequence=["#c2410c"],
                 )
                 fig.update_layout(
-                    paper_bgcolor="#0a0c10", plot_bgcolor="#0a0c10",
-                    font=dict(family="IBM Plex Mono", color="#4a6070", size=11),
+                    paper_bgcolor="#faf5ee", plot_bgcolor="#faf5ee",
+                    font=dict(family="IBM Plex Sans", color="#7c6b5b", size=11),
                     margin=dict(l=10, r=10, t=10, b=10),
-                    xaxis=dict(gridcolor="#1a2028"),
-                    yaxis=dict(gridcolor="#1a2028"),
+                    xaxis=dict(gridcolor="#e7dccd"),
+                    yaxis=dict(gridcolor="#e7dccd"),
                 )
                 st.plotly_chart(fig, use_container_width=True)
             else:
@@ -1176,14 +1194,14 @@ if st.session_state.results:
                     x="count", y="signature_short",
                     orientation="h",
                     template="plotly_dark",
-                    color_discrete_sequence=["#FFB800"],
+                    color_discrete_sequence=["#d08700"],
                 )
                 fig2.update_layout(
-                    paper_bgcolor="#0a0c10", plot_bgcolor="#0a0c10",
-                    font=dict(family="IBM Plex Mono", color="#4a6070", size=10),
+                    paper_bgcolor="#faf5ee", plot_bgcolor="#faf5ee",
+                    font=dict(family="IBM Plex Sans", color="#7c6b5b", size=10),
                     margin=dict(l=10, r=10, t=10, b=10),
-                    xaxis=dict(gridcolor="#1a2028"),
-                    yaxis=dict(gridcolor="#1a2028"),
+                    xaxis=dict(gridcolor="#e7dccd"),
+                    yaxis=dict(gridcolor="#e7dccd"),
                 )
                 st.plotly_chart(fig2, use_container_width=True)
             else:
@@ -1200,11 +1218,11 @@ if st.session_state.results:
                 fig3 = px.pie(
                     sev_counts, names="severity", values="count",
                     template="plotly_dark",
-                    color_discrete_sequence=["#FF2D55", "#FFB800", "#30D158", "#64D2FF"],
+                    color_discrete_sequence=["#b91c1c", "#d08700", "#5d8a3a", "#64748b"],
                 )
                 fig3.update_layout(
-                    paper_bgcolor="#0a0c10",
-                    font=dict(family="IBM Plex Mono", color="#4a6070", size=11),
+                    paper_bgcolor="#faf5ee",
+                    font=dict(family="IBM Plex Sans", color="#7c6b5b", size=11),
                     margin=dict(l=10, r=10, t=10, b=10),
                 )
                 st.plotly_chart(fig3, use_container_width=True)
@@ -1220,14 +1238,14 @@ if st.session_state.results:
                     ip_counts, x="count", y="src_ip",
                     orientation="h",
                     template="plotly_dark",
-                    color_discrete_sequence=["#30D158"],
+                    color_discrete_sequence=["#5d8a3a"],
                 )
                 fig4.update_layout(
-                    paper_bgcolor="#0a0c10", plot_bgcolor="#0a0c10",
-                    font=dict(family="IBM Plex Mono", color="#4a6070", size=10),
+                    paper_bgcolor="#faf5ee", plot_bgcolor="#faf5ee",
+                    font=dict(family="IBM Plex Sans", color="#7c6b5b", size=10),
                     margin=dict(l=10, r=10, t=10, b=10),
-                    xaxis=dict(gridcolor="#1a2028"),
-                    yaxis=dict(gridcolor="#1a2028"),
+                    xaxis=dict(gridcolor="#e7dccd"),
+                    yaxis=dict(gridcolor="#e7dccd"),
                 )
                 st.plotly_chart(fig4, use_container_width=True)
             else:
