@@ -852,7 +852,8 @@ if st.session_state.results:
             # has no relative imports, so it doesn't need the synthetic package.
             from cluster_map import (
                 COLOR_BY_OPTIONS, HIGHLIGHT_COLORS,
-                assign_slots, build_cluster_map, incident_option, incident_table, top_incidents,
+                assign_slots, build_cluster_map, incident_option, incident_table, semantic_layout,
+                top_incidents,
             )
             has_plotly = True
         except ImportError:
@@ -874,11 +875,14 @@ if st.session_state.results:
             with col_ctrl1:
                 proj_method = st.radio(
                     "Projection method",
-                    ["PCA", "UMAP", "t-SNE"],
+                    ["Similarity", "PCA", "UMAP", "t-SNE"],
                     horizontal=True,
                     help=(
-                        "PCA: instant, linear, and keeps real distances — incidents that are "
-                        "far apart on the map really are different. Best default for alerts. "
+                        "Similarity (default): incidents are spread so similar attacks sit close, and each "
+                        "alert is placed between them by how similar it is to each — a dot halfway between "
+                        "two incidents resembles both; a dot nearer one resembles that one more. "
+                        "The most faithful layout for reading meaning off the map. "
+                        "PCA: instant, linear; shows the two biggest directions of variation only. "
                         "UMAP / t-SNE: stretch every dense patch to fill space, so a port scan "
                         "(one distinct alert per port) takes over the map and everything else "
                         "collapses into one pile. Useful only for zooming into local structure."
@@ -934,7 +938,15 @@ if st.session_state.results:
                         _pca_var = None   # only set for PCA projections
                         _actual_method = proj_method  # track what was actually run
 
-                        if proj_method == "UMAP":
+                        # Exact "most similar incidents" for the hover text, whatever the projection.
+                        coords, st.session_state["_closest"] = semantic_layout(df, embeddings)
+                        if proj_method == "Similarity" and coords is None:
+                            proj_method = _actual_method = "PCA"   # needs 3+ incidents to lay out
+
+                        if proj_method == "Similarity":
+                            pass
+
+                        elif proj_method == "UMAP":
                             import umap
                             reducer = umap.UMAP(n_components=2, random_state=42, metric="cosine",
                                                 n_neighbors=max(2, min(15, len(uniq) - 1)))
@@ -1020,6 +1032,7 @@ if st.session_state.results:
                     y_title=y_label,
                     show_ticks=axis_ticks_meaningful and not by_incident,
                     by_incident=by_incident,
+                    closest=st.session_state.get("_closest"),
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
@@ -1047,6 +1060,17 @@ if st.session_state.results:
                         "is genuinely further along that axis than one at x=0.8. "
                         "Tight groups of dots mean those alerts have very "
                         "similar signatures, ports, and protocols."
+                    ),
+                    "Similarity": (
+                        "Each incident's meaning is the average embedding of its alerts. "
+                        "The incidents are spread out so that <b>map distance tracks how "
+                        "different their meaning is</b>, then every alert is placed between "
+                        "them in proportion to its similarity to each. A dot sitting on an "
+                        "incident is typical of it; a dot between two incidents resembles "
+                        "both; a dot nearer one is more related to that one. "
+                        "<b>The axis numbers are arbitrary</b>. No flat picture of 384 "
+                        "dimensions is exact, so hover a dot for its two most similar "
+                        "incidents with the exact similarity percentages."
                     ),
                     "UMAP": (
                         "UMAP (Uniform Manifold Approximation and Projection) learns the "
@@ -1081,8 +1105,9 @@ if st.session_state.results:
                                     color:#3d5066;letter-spacing:0.12em;text-transform:uppercase;
                                     margin-bottom:6px;">How to read this chart</div>
                         <div style="font-size:0.8rem;color:#7a8da0;line-height:1.55;">
-                          <b style="color:#c8d0db;">Each dot</b> = a stack of alerts that look the same;
-                          a bigger dot = more alerts. Hover any dot to see what it is.<br>
+                          <b style="color:#c8d0db;">Each bubble</b> = one incident, bigger = more alerts.
+                          <b style="color:#c8d0db;">Each small dot</b> = alerts that look the same. Hover a dot
+                          to see what it is and which incidents it is most similar to.<br>
                           <b style="color:#c8d0db;">Position</b> = what the alert looks like: signature, category,
                           severity, protocol, destination port, internal vs external host. Nearby dots = similar
                           alerts. Position does <b>not</b> show who sent the alert or when.<br>

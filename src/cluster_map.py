@@ -4,11 +4,15 @@ Cluster Map figure for the Streamlit GUI (app.py).
 Kept free of Streamlit so the figure can be built and checked on its own.
 
 What each visual channel means (the same on every run):
-  position = 2-D projection of the alert embedding, i.e. what the alert LOOKS LIKE
-             (signature, category, severity, protocol, destination port, internal/external).
-             It does NOT encode source IP or time — those only decide incident grouping.
-             In the default incident view every incident is ONE bubble at the centre of
-             its alerts, nudged just far enough that no two bubbles cover each other.
+  position = what the alert MEANS (signature, category, severity, protocol, destination
+             port, internal/external). It does NOT encode source IP or time — those only
+             decide incident grouping.
+             Default "Similarity" layout (semantic_layout): incident centres are spread so
+             that similar attacks sit close, and every alert is placed between the centres
+             in proportion to how similar it is to each. An alert halfway between two
+             incidents really is about equally similar to both.
+             In the incident view every incident is also drawn as ONE bubble at the centre
+             of its alerts, nudged just far enough that no two bubbles cover each other.
   size     = how many alerts the bubble holds (incident view) or how many
              identical-looking alerts are stacked on that exact spot (alert view).
   colour   = the grouping picked in "Colour by". Capped at 3 colours + grey so every
@@ -160,12 +164,23 @@ def _stack(sub: pd.DataFrame) -> pd.DataFrame:
     out["incident_ids"] = g["incident_id"].agg(lambda s: list(s.dropna().unique()))
     out["src"] = g["src_ip"].agg(_few)
     out["dst"] = g["dest_ip"].agg(_few)
+    if "near1" in sub:
+        for col in ("near1", "sim1", "near2", "sim2"):
+            out[col] = g[col].first()
     # Biggest first so small markers are drawn on top and stay hoverable.
     return out.reset_index(drop=True).sort_values("n", ascending=False)
 
 
-def _hover(stack: pd.DataFrame, inc_by_id: Dict[str, dict], noise: bool) -> List[str]:
+def _similar_to(r, inc_by_id: Dict[str, dict]) -> str:
+    """'Most similar to INC-00003 · SSH brute force (93%), then INC-00007 · … (81%)' — exact, not read off the map."""
+    def one(inc_id, sim):
+        return f"{html.escape(str(inc_id))} · {html.escape(family_label(inc_by_id.get(inc_id, {}).get('family')))} ({sim:.0%})"
+    return f"<br>Most similar to {one(r.near1, r.sim1)}<br>then {one(r.near2, r.sim2)}"
+
+
+def _hover(stack: pd.DataFrame, inc_by_id: Dict[str, dict], noise: bool, similar: bool = False) -> List[str]:
     e = html.escape
+    similar = similar and "near1" in stack
     texts = []
     for r in stack.itertuples(index=False):
         if noise:
@@ -191,6 +206,7 @@ def _hover(stack: pd.DataFrame, inc_by_id: Dict[str, dict], noise: bool) -> List
             f"{e(category)} · {severity_label(r.severity)} · {e(proto)}{port}<br>"
             f"{e(r.src)} → {e(r.dst)}<br>"
             f"{e(str(r.first_seen)[:16].replace('T', ' '))} → {e(str(r.last_seen)[:16].replace('T', ' '))}"
+            + (_similar_to(r, inc_by_id) if similar else "")
         )
     return texts
 
@@ -251,6 +267,52 @@ _COLOR_MEANING = {
 }
 
 
+def semantic_layout(df: pd.DataFrame, embeddings: np.ndarray, tau: float = 0.03):
+    """Lay alerts out by meaning. Returns (coords, closest); coords is None with < 3 incidents.
+
+    1. Each incident's meaning is the mean embedding of its alerts (its centre).
+    2. The centres are placed in 2-D so that map distance tracks cosine distance between
+       them (metric MDS): similar attack types end up as neighbours.
+    3. Every alert, clustered or not, goes to the similarity-weighted average of the centres.
+       The weights fall off fast (tau), so an alert sits on the incident it resembles most
+       and only moves toward a second one when it is nearly as similar to that one too.
+
+    Any flat picture of 384 dimensions bends some distances, so `closest` carries the exact
+    numbers for the hover text: the two most similar incidents per alert and the cosine
+    similarity to each, computed in the full embedding space.
+    """
+    from sklearn.manifold import smacof
+
+    inc = df["incident_id"].to_numpy()
+    keep = pd.notna(inc)
+    centres = pd.DataFrame(embeddings[keep]).groupby(inc[keep]).mean()
+    ids = centres.index.to_numpy()
+    if len(ids) < 2:
+        return None, None
+    C = centres.to_numpy()
+    C = C / np.linalg.norm(C, axis=1, keepdims=True).clip(1e-9)
+
+    # Identical alerts share one row: same similarities, same spot.
+    uniq, inverse = np.unique(embeddings, axis=0, return_inverse=True)
+    inverse = inverse.reshape(-1)
+    sim = uniq @ C.T                                   # embeddings are unit length -> cosine similarity
+    top = np.argsort(-sim, axis=1)[:, :2]
+    rows = np.arange(len(uniq))
+    closest = pd.DataFrame({
+        "near1": ids[top[:, 0]], "sim1": sim[rows, top[:, 0]],
+        "near2": ids[top[:, 1]], "sim2": sim[rows, top[:, 1]],
+    }).iloc[inverse].reset_index(drop=True)
+    if len(ids) < 3:
+        return None, closest                           # two centres only make a line; caller falls back
+
+    # shortcut: SMACOF is O(incidents^2) per iteration, fine up to a few thousand incidents;
+    # beyond that lay out a sample of centres and place the rest like alerts.
+    xy, _ = smacof(np.clip(1 - C @ C.T, 0, None), n_components=2, n_init=4, random_state=0)
+    w = np.exp((sim - sim.max(axis=1, keepdims=True)) / tau)
+    coords = (w / w.sum(axis=1, keepdims=True)) @ xy
+    return coords[inverse], closest
+
+
 def _sizes(counts, max_count) -> np.ndarray:
     # Marker area grows with the number of alerts (diameter ~ sqrt(count)).
     return 6 + 22 * np.sqrt(np.asarray(counts) / max_count)
@@ -303,10 +365,13 @@ def build_cluster_map(
     y_title: str = "",
     show_ticks: bool = False,
     by_incident: bool = True,
+    closest: Optional[pd.DataFrame] = None,
 ) -> go.Figure:
     """Build the Cluster Map. `slots` maps highlighted incident_id -> colour slot (see assign_slots).
 
-    by_incident=True draws one bubble per incident; False draws every distinct alert.
+    by_incident=True draws one bubble per incident with its alerts as small dots around it;
+    False draws only the alerts. `closest` (from semantic_layout) adds each alert's two most
+    similar incidents to its hover text.
     """
     slots = slots or {}
     inc_by_id = {i["incident_id"]: i for i in incidents}
@@ -317,12 +382,22 @@ def build_cluster_map(
     pts["is_noise"] = pts["cluster_id"] == -1
     pts["_proto"] = pts["proto"].fillna("unknown").astype(str).str.upper()
     pts["_category"] = pts["category"].fillna("(none)").astype(str)
+    if closest is not None:
+        pts = pd.concat([pts, closest.reset_index(drop=True)], axis=1)
+
+    def _snap(p: pd.DataFrame) -> pd.DataFrame:
+        # Snap to a 300x300 grid (~2px on screen) so visually coincident alerts stack into one marker.
+        for axis_col, bin_col in (("x", "_bx"), ("y", "_by")):
+            lo, span = p[axis_col].min(), p[axis_col].max() - p[axis_col].min()
+            p[bin_col] = np.round((p[axis_col] - lo) / (span / 300 if span > 0 else 1)).astype(int)
+        return p
+
+    # Incident view keeps the alerts where they really are, as small dots under the bubbles.
+    alert_dots = []
     if by_incident:
+        alert_dots = [(color, _stack(sub)) for _, color, sub in _groups(_snap(pts.copy()), incidents, color_by, slots)]
         _one_bubble_per_incident(pts)
-    # Snap to a 300x300 grid (~2px on screen) so visually coincident alerts stack into one marker.
-    for axis_col, bin_col in (("x", "_bx"), ("y", "_by")):
-        lo, span = pts[axis_col].min(), pts[axis_col].max() - pts[axis_col].min()
-        pts[bin_col] = np.round((pts[axis_col] - lo) / (span / 300 if span > 0 else 1)).astype(int)
+    _snap(pts)
 
     groups = _groups(pts, incidents, color_by, slots)
     noise = pts[pts["is_noise"]] if show_noise else pts.iloc[0:0]
@@ -342,7 +417,15 @@ def build_cluster_map(
             name=f"Unclustered alerts ({len(noise):,})",
             marker=dict(symbol="circle-open", color=NOISE_COLOR, size=_sizes(noise_stack["n"], max_count),
                         line=dict(width=1.5, color=NOISE_COLOR)),
-            text=_hover(noise_stack, inc_by_id, noise=True),
+            text=_hover(noise_stack, inc_by_id, noise=True, similar=True),
+            hovertemplate="%{text}<extra></extra>",
+        ))
+
+    for color, dots in alert_dots:
+        fig.add_trace(go.Scattergl(
+            x=dots["x"], y=dots["y"], mode="markers", showlegend=False,
+            marker=dict(color=color, size=5, opacity=0.6),
+            text=_hover(dots, inc_by_id, noise=False, similar=True),
             hovertemplate="%{text}<extra></extra>",
         ))
 
@@ -352,7 +435,7 @@ def build_cluster_map(
             marker=dict(color=color, size=_sizes(stack["n"], max_count), opacity=0.9,
                         # Surface-coloured ring keeps overlapping markers apart.
                         line=dict(width=1, color=SURFACE)),
-            text=_hover(stack, inc_by_id, noise=False),
+            text=_hover(stack, inc_by_id, noise=False, similar=not by_incident),
             hovertemplate="%{text}<extra></extra>",
         ))
 
@@ -409,10 +492,11 @@ def build_cluster_map(
 
     # Plotly titles don't wrap, so the key is split into short lines that fit a narrow column.
     key = [
-        (f"Bubble = one incident · bigger = more alerts (largest {int(max_count):,})" if by_incident else
+        (f"Bubble = one incident · bigger = more alerts (largest {int(max_count):,}) · small dot = its alerts"
+         if by_incident else
          f"Dot = alerts that look the same · bigger = more (largest {int(max_count):,})"),
-        ("Closer bubbles = incidents made of more similar alerts" if by_incident else
-         "Closer dots = more similar signature, port and protocol"),
+        ("Closer = more similar meaning · a dot between two incidents resembles both" if method == "Similarity" else
+         "Closer = more similar signature, port and protocol (approximate in this projection)"),
         f"Colour = {_COLOR_MEANING.get(color_by, color_by)} · ring = in no incident",
     ]
     fig.update_layout(
@@ -443,3 +527,20 @@ def build_cluster_map(
         height=720,
     )
     return fig
+
+
+if __name__ == "__main__":   # self-check: python src/cluster_map.py
+    # Three incidents on the x, y, z axes, plus unclustered alerts with a known mix of meaning.
+    unit = lambda v: np.array(v, dtype=float) / np.linalg.norm(v)
+    E = np.vstack([np.eye(3)[i] for i in (0, 1, 2) for _ in range(4)]
+                  + [unit([1, 1, 0]), unit([1, 0.9, 0]), unit([0, 0, 1])])
+    d = pd.DataFrame({"incident_id": ["A"] * 4 + ["B"] * 4 + ["C"] * 4 + [None] * 3})
+    xy, near = semantic_layout(d, E)
+    a, b, c = xy[0], xy[4], xy[8]
+    dist = lambda p, q: float(np.linalg.norm(p - q))
+    assert abs(dist(xy[12], a) - dist(xy[12], b)) < 1e-6, "equally similar to A and B -> halfway"
+    assert dist(xy[12], c) > dist(xy[12], a), "and away from the unrelated incident"
+    assert dist(xy[13], a) < dist(xy[13], b), "more similar to A -> nearer A"
+    assert dist(xy[14], c) < 1e-6, "identical to C -> on C"
+    assert near.loc[13, "near1"] == "A" and near.loc[13, "near2"] == "B" and near.loc[13, "sim1"] > near.loc[13, "sim2"]
+    print("semantic_layout self-check passed")
