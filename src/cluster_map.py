@@ -51,16 +51,17 @@ FAMILY_LABELS = {
 SEVERITY_NAMES = {1: "High", 2: "Medium", 3: "Low"}
 
 # Validated with the dataviz palette checker against the plot surface below
-# (all-pairs, dark mode): blue / orange / aqua clear the CVD and normal-vision floors.
-HIGHLIGHT_COLORS = ["#3987e5", "#d95926", "#199e70"]
-OTHER_COLOR = "#5a6470"     # every non-highlighted group; 3.3:1 on the surface
-NOISE_COLOR = "#7a8799"     # drawn as a hollow ring, so it differs by shape too
+# (all-pairs, light mode): orange / blue / aqua clear the CVD and normal-vision floors.
+# Aqua is under 3:1 on the surface, which is why highlights are always labelled too.
+HIGHLIGHT_COLORS = ["#eb6834", "#2a78d6", "#1baf7a"]
+OTHER_COLOR = "#9a8f83"     # every non-highlighted group; 3.1:1 on the surface
+NOISE_COLOR = "#8f8377"     # drawn as a hollow ring, so it differs by shape too
 # Severity: status red / orange for the two levels that need attention, neutral slate for low.
-SEVERITY_COLORS = {1: "#d03b3b", 2: "#ec835a", 3: "#8a9db0"}
+SEVERITY_COLORS = {1: "#d03b3b", 2: "#ec835a", 3: "#7d8c9a"}
 
-SURFACE = "#080b0f"
-INK = "#c8d0db"
-MUTED_INK = "#7a8799"
+SURFACE = "#fffdf9"
+INK = "#2b2118"
+MUTED_INK = "#5f5245"
 
 COLOR_BY_OPTIONS = ["Incident", "Severity", "Protocol", "Category", "Source IP"]
 
@@ -458,7 +459,7 @@ def build_cluster_map(
             fig.add_annotation(
                 x=r["x"], y=r["y"], showarrow=False, yanchor="bottom", yshift=lift,
                 text=html.escape(family_label(inc_by_id[inc_id].get("family"))),
-                font=dict(size=10, color=INK, family="IBM Plex Mono"),
+                font=dict(size=10, color=INK, family="IBM Plex Sans"),
             )
 
     # Direct labels for the highlighted incidents, pinned to each incident's weighted medoid:
@@ -478,16 +479,16 @@ def build_cluster_map(
             x=anchor["x"], y=anchor["y"], ax=ax, ay=ay,
             text=f"<b>{html.escape(inc_id)}</b> {html.escape(family_label(inc_by_id[inc_id].get('family')))}",
             showarrow=True, arrowhead=0, arrowwidth=1.2, arrowcolor=accent,
-            font=dict(size=11, color="#e0e8f0", family="IBM Plex Mono"),
-            bgcolor="rgba(15,19,24,0.92)", bordercolor=accent, borderwidth=1, borderpad=4,
+            font=dict(size=11, color="#2b2118", family="IBM Plex Sans"),
+            bgcolor="rgba(255,253,249,0.94)", bordercolor=accent, borderwidth=1, borderpad=4,
         )
 
     n_clustered = int((~pts["is_noise"]).sum())
     n_noise = int(pts["is_noise"].sum())
-    axis_font = dict(size=11, color="#4a8090", family="IBM Plex Mono")
+    axis_font = dict(size=11, color="#7c6b5b", family="IBM Plex Sans")
     axis = dict(
-        gridcolor="#111820", zeroline=False, showticklabels=show_ticks,
-        tickfont=dict(size=9, color="#2a3a4a", family="IBM Plex Mono"), tickformat=".2f",
+        gridcolor="#efe6d9", zeroline=False, showticklabels=show_ticks,
+        tickfont=dict(size=9, color="#7c6b5b", family="IBM Plex Sans"), tickformat=".2f",
     )
 
     # Plotly titles don't wrap, so the key is split into short lines that fit a narrow column.
@@ -500,28 +501,28 @@ def build_cluster_map(
         f"Colour = {_COLOR_MEANING.get(color_by, color_by)} · ring = in no incident",
     ]
     fig.update_layout(
-        paper_bgcolor="#0a0c10",
+        paper_bgcolor="#faf5ee",
         plot_bgcolor=SURFACE,
-        font=dict(family="IBM Plex Mono", color="#4a6070", size=11),
+        font=dict(family="IBM Plex Sans", color="#7c6b5b", size=11),
         margin=dict(l=10, r=10, t=112, b=80),
         xaxis=dict(title=dict(text=x_title, font=axis_font), **axis),
         yaxis=dict(title=dict(text=y_title, font=axis_font), **axis),
         # Horizontal legend under the plot so it never squeezes the map on narrow screens.
         legend=dict(
             orientation="h", x=0, xanchor="left", yref="container", y=0.01, yanchor="bottom",
-            bgcolor="#0f1318", bordercolor="#1e2530", borderwidth=1,
+            bgcolor="#fffdf9", bordercolor="#e7dccd", borderwidth=1,
             font=dict(size=10, color=INK), itemsizing="constant",
             title=dict(text=f"Colour = {color_by}:", font=dict(size=10, color=MUTED_INK), side="top left"),
         ),
-        hoverlabel=dict(bgcolor="#0f1318", bordercolor="#1e2530",
-                        font=dict(family="IBM Plex Mono", size=11, color=INK)),
+        hoverlabel=dict(bgcolor="#fffdf9", bordercolor="#e7dccd",
+                        font=dict(family="IBM Plex Sans", size=11, color=INK)),
         title=dict(
             text=(
                 f"<b>{'Incident' if by_incident else 'Alert'} similarity map</b> · {method}<br>"
                 f"{n_clustered:,} alerts in {len(incidents)} incidents · {n_noise:,} unclustered"
                 + "".join(f"<br><span style='font-size:11px;color:{MUTED_INK}'>{line}</span>" for line in key)
             ),
-            font=dict(size=13, color=INK, family="IBM Plex Mono"),
+            font=dict(size=13, color=INK, family="IBM Plex Sans"),
             x=0.01, xanchor="left", y=0.985, yanchor="top",
         ),
         height=720,

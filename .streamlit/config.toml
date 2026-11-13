@@ -4,3 +4,11 @@ maxMessageSize = 1024       # MB — required for large file transfers
 
 [browser]
 gatherUsageStats = false
+
+# Warm light theme for Streamlit's own widgets; the custom CSS in src/app.py matches these.
+[theme]
+base = "light"
+primaryColor = "#c2410c"
+backgroundColor = "#faf5ee"
+secondaryBackgroundColor = "#f3eadd"
+textColor = "#2b2118"
