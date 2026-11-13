@@ -18,9 +18,9 @@ def run_pipeline(
     model_name: str = DEFAULT_MODEL_NAME,
     limit: Optional[int] = None,
     window_minutes: Optional[int] = None,
-    eps: float = 0.35,
+    eps: float = 0.30,
     min_samples: int = 3,
-    algo: str = "dbscan",
+    algo: str = "hierarchical",
     distance_threshold: float = 0.35,
     xi: float = 0.05,
     min_cluster_size: int = 3,
@@ -107,12 +107,12 @@ def main():
     ap.add_argument("--out", default="out", help="Output directory")
     ap.add_argument("--model", default=DEFAULT_MODEL_NAME, help="SentenceTransformer model name")
     ap.add_argument("--limit", type=int, default=None, help="Limit number of alerts parsed (debug)")
-    ap.add_argument("--algo", choices=["dbscan", "hierarchical", "optics"], default="dbscan", help="Clustering algorithm: dbscan, hierarchical, or optics")
+    ap.add_argument("--algo", choices=["dbscan", "hierarchical", "optics"], default="hierarchical", help="Clustering algorithm: hierarchical (most accurate, see src/eval.py), dbscan, or optics")
     ap.add_argument("--xi", type=float, default=0.05, help="OPTICS xi steepness threshold (0–1). Only used when --algo optics")
     ap.add_argument("--min-cluster-size", type=int, default=3, help="OPTICS minimum cluster size. Only used when --algo optics")
     ap.add_argument("--dist-threshold", type=float, default=0.35, help="Hierarchical clustering distance threshold (cosine distance). Only used when --algo hierarchical")
     ap.add_argument("--window-min", type=int, default=None, help="Candidate grouping time window in minutes")
-    ap.add_argument("--eps", type=float, default=0.35, help="DBSCAN eps (cosine distance)")
+    ap.add_argument("--eps", type=float, default=0.30, help="DBSCAN eps (cosine distance)")
     ap.add_argument("--min-samples", type=int, default=3, help="DBSCAN min_samples")
     args = ap.parse_args()
 

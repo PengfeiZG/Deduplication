@@ -94,7 +94,7 @@ alerts_clustered.parquet  +  incidents.json  +  run_stats.json
 ├── build_text.py           # Alert → token string feature engineering
 ├── cluster.py              # Candidate grouping + DBSCAN/Hierarchical/OPTICS
 ├── embed.py                # Sentence transformer embedding + disk cache
-├── eval.py                 # Evaluation placeholder (purity / mixed-cluster rate)
+├── eval.py                 # Labelled benchmark of clustering methods (purity / ARI)
 ├── incidents.py            # Incident synthesis, family labelling, risk scoring, stitching
 ├── parse_suricata.py       # Suricata EVE JSON parser
 ├── pipeline.py             # End-to-end orchestration + CLI entry point
@@ -167,7 +167,7 @@ The dashboard provides a full analyst workflow in five tabs:
 |---|---|
 | **Incidents** | Expandable incident cards with all alerts, signatures, timelines, IPs, ports, risk scores, and family labels. Filterable by severity, keyword, sort order. |
 | **Alert Table** | Full clustered alert table with search and noise toggle. |
-| **Cluster Map** | UMAP / PCA / t-SNE projection of alert embeddings. Colour by cluster, severity, protocol, category, or source IP. Interactive hover with alert detail. |
+| **Cluster Map** | One bubble per incident (sized by alert count, biggest ones named), placed by PCA / UMAP / t-SNE of the alert embeddings. Colour by incident, severity, protocol, category, or source IP. Untick *One bubble per incident* to see every distinct alert. |
 | **Distributions** | Alerts per cluster, top signatures, severity breakdown, top source IPs. |
 | **Download** | Export `alerts_clustered.parquet`, `incidents.json`, and `run_stats.json`. |
 
@@ -190,8 +190,8 @@ maxMessageSize = 1024
 | `--eve` | *(required)* | Path to Suricata `eve.json` log file |
 | `--out` | `out/` | Output directory |
 | `--model` | `all-MiniLM-L6-v2` | Hugging Face sentence transformer model |
-| `--algo` | `dbscan` | Clustering algorithm: `dbscan`, `hierarchical`, `optics` |
-| `--eps` | `0.35` | DBSCAN cosine distance threshold |
+| `--algo` | `hierarchical` | Clustering algorithm: `hierarchical`, `dbscan`, `optics` |
+| `--eps` | `0.30` | DBSCAN cosine distance threshold |
 | `--min-samples` | `5` | Minimum alerts to form a cluster |
 | `--window-min` | `30` | Candidate group time window in minutes |
 | `--dist-threshold` | `0.35` | Hierarchical clustering distance threshold |
@@ -203,14 +203,14 @@ maxMessageSize = 1024
 
 ## Clustering Algorithms
 
-### DBSCAN *(default)*
+### DBSCAN
 Density-based clustering with a fixed `eps` radius. Best for datasets where clusters have roughly uniform density. Alerts outside any cluster are automatically labelled as noise (`cluster_id = -1`).
 
 ```bash
 python -m pipeline --eve eve.json --algo dbscan --eps 0.35 --min-samples 5
 ```
 
-### Hierarchical (Agglomerative)
+### Hierarchical (Agglomerative) *(default)*
 Average-linkage clustering with a cosine distance threshold. Produces no explicit noise label and all alerts are assigned a cluster, with small clusters post-processed out by `min_samples`.
 
 ```bash
@@ -223,6 +223,33 @@ Variable-density extension of DBSCAN. Best for datasets with campaigns of mixed 
 ```bash
 python -m pipeline --eve eve.json --algo optics --xi 0.05 --min-cluster-size 5
 ```
+
+---
+
+### Which one is most accurate?
+
+`python -m src.eval` writes a labelled synthetic log (22 campaigns plus background noise, with
+multi-signature campaigns, port scans, campaigns crossing the time window, and two campaigns
+from one host at once), runs every method on it, and scores the resulting incidents against
+the truth. Mean of 3 generated datasets, best setting per method:
+
+| Method | Best setting | ARI | Purity | Inverse purity | Incidents (22 true) |
+|---|---|---|---|---|---|
+| **Agglomerative, average link** | threshold 0.35 | **1.000** | 0.997 | 1.000 | 32 |
+| DBSCAN | eps 0.30 | 0.997 | 0.997 | 0.994 | 31 |
+| Agglomerative, single link | threshold 0.30 | 0.997 | 0.997 | 0.994 | 31 |
+| Agglomerative, complete link | threshold 0.40 | 0.995 | 0.996 | 0.994 | 37 |
+| Spectral (K by eigengap) | sigma 0.20 | 0.993 | 0.990 | 0.998 | 37 |
+| Gaussian mixture (K by BIC) | reg_covar 0.01 | 0.890 | 0.994 | 0.862 | 51 |
+| K-means (K by silhouette) | — | 0.845 | 0.986 | 0.780 | 86 |
+| HDBSCAN | min_cluster_size 10 | 0.817 | 0.999 | 0.720 | 58 |
+| OPTICS | xi 0.01 | 0.725 | 0.986 | 0.678 | 119 |
+
+ARI (adjusted Rand index) is the headline: purity alone rewards over-splitting, which is why
+OPTICS and K-means score 0.99 purity while cutting each campaign into several incidents.
+The extra incidents above 22 are small groups of repeated background alerts.
+The data is synthetic and the thresholds were tuned on it, so treat the top four as a tie on
+accuracy; average link is the default because it also avoids DBSCAN's chaining on real traffic.
 
 ---
 

@@ -108,7 +108,8 @@ def cluster_within_groups(
             mapped.append(-1 if lab == -1 else cluster_offset + int(lab))
         df.loc[idx_list, "cluster_id"] = mapped
 
-        n_clusters = len(set(labels)) - (1 if -1 in labels else 0)
-        cluster_offset += max(n_clusters, 0)
+        # Advance past the highest label, not the cluster count: hierarchical labels have gaps
+        # once small clusters are dropped, and counting them reused ids across source IPs.
+        cluster_offset += int(max(labels)) + 1
 
     return df
