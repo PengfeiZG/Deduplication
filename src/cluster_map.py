@@ -7,7 +7,10 @@ What each visual channel means (the same on every run):
   position = 2-D projection of the alert embedding, i.e. what the alert LOOKS LIKE
              (signature, category, severity, protocol, destination port, internal/external).
              It does NOT encode source IP or time — those only decide incident grouping.
-  size     = how many identical-looking alerts are stacked on that exact spot.
+             In the default incident view every incident is ONE bubble at the centre of
+             its alerts, nudged just far enough that no two bubbles cover each other.
+  size     = how many alerts the bubble holds (incident view) or how many
+             identical-looking alerts are stacked on that exact spot (alert view).
   colour   = the grouping picked in "Colour by". Capped at 3 colours + grey so every
              colour stays tellable apart on a scatter, including for colour-blind analysts.
   ring     = unclustered (noise) alert that belongs to no incident.
@@ -248,6 +251,44 @@ _COLOR_MEANING = {
 }
 
 
+def _sizes(counts, max_count) -> np.ndarray:
+    # Marker area grows with the number of alerts (diameter ~ sqrt(count)).
+    return 6 + 22 * np.sqrt(np.asarray(counts) / max_count)
+
+
+def _one_bubble_per_incident(pts: pd.DataFrame) -> None:
+    """Move each clustered alert onto its incident's centre, then push overlapping bubbles apart.
+
+    Plotting alerts individually gives a scan one dot per port tried and a 600-alert brute
+    force a single dot, and stacks incidents that look alike on the same spot. One bubble
+    per incident shows what the clustering actually produced.
+    """
+    clustered = ~pts["is_noise"]
+    inc = pts[clustered].groupby("incident_id").agg(x=("x", "mean"), y=("y", "mean"), n=("x", "size"))
+    if len(inc) < 2:
+        return
+    diam = _sizes(inc["n"], inc["n"].max())
+    lo = pts[["x", "y"]].min().to_numpy()
+    span = (pts[["x", "y"]].max().to_numpy() - lo).clip(1e-9)
+    box = np.array([1000.0, 520.0])                      # approx. plot area in px
+    p = (inc[["x", "y"]].to_numpy() - lo) / span * box
+    # Incidents with identical alerts start on the same point; a tiny spiral gives them a direction.
+    k = np.arange(len(p))
+    p += 0.5 * np.sqrt(k)[:, None] * np.column_stack([np.cos(2.4 * k), np.sin(2.4 * k)])
+    need = (diam[:, None] + diam[None, :]) / 2 + 4       # centre distance at which two bubbles clear
+    for _ in range(300):
+        d = p[:, None, :] - p[None, :, :]
+        dist = np.hypot(d[..., 0], d[..., 1])
+        np.fill_diagonal(dist, np.inf)
+        push = np.clip(need - dist, 0, None)
+        if not push.any():
+            break
+        p += 0.3 * (d / dist[..., None] * push[..., None]).sum(1)
+    inc[["x", "y"]] = p / box * span + lo
+    pts.loc[clustered, "x"] = pts.loc[clustered, "incident_id"].map(inc["x"])
+    pts.loc[clustered, "y"] = pts.loc[clustered, "incident_id"].map(inc["y"])
+
+
 # ── Public entry point ────────────────────────────────────────────────────────
 
 def build_cluster_map(
@@ -261,17 +302,23 @@ def build_cluster_map(
     x_title: str = "",
     y_title: str = "",
     show_ticks: bool = False,
+    by_incident: bool = True,
 ) -> go.Figure:
-    """Build the Cluster Map. `slots` maps highlighted incident_id -> colour slot (see assign_slots)."""
+    """Build the Cluster Map. `slots` maps highlighted incident_id -> colour slot (see assign_slots).
+
+    by_incident=True draws one bubble per incident; False draws every distinct alert.
+    """
     slots = slots or {}
     inc_by_id = {i["incident_id"]: i for i in incidents}
 
     pts = df.reset_index(drop=True).copy()
-    pts["x"] = coords[:, 0]
-    pts["y"] = coords[:, 1]
+    pts["x"] = np.asarray(coords[:, 0], dtype=float)   # projections come back as float32
+    pts["y"] = np.asarray(coords[:, 1], dtype=float)
     pts["is_noise"] = pts["cluster_id"] == -1
     pts["_proto"] = pts["proto"].fillna("unknown").astype(str).str.upper()
     pts["_category"] = pts["category"].fillna("(none)").astype(str)
+    if by_incident:
+        _one_bubble_per_incident(pts)
     # Snap to a 300x300 grid (~2px on screen) so visually coincident alerts stack into one marker.
     for axis_col, bin_col in (("x", "_bx"), ("y", "_by")):
         lo, span = pts[axis_col].min(), pts[axis_col].max() - pts[axis_col].min()
@@ -287,17 +334,13 @@ def build_cluster_map(
         all_counts.append(noise_stack["n"].max())
     max_count = max(all_counts) if all_counts else 1
 
-    def _sizes(counts: pd.Series) -> np.ndarray:
-        # Marker area grows with the number of stacked alerts (diameter ~ sqrt(count)).
-        return 6 + 22 * np.sqrt(counts.to_numpy() / max_count)
-
     fig = go.Figure()
 
     if noise_stack is not None:
         fig.add_trace(go.Scattergl(
             x=noise_stack["x"], y=noise_stack["y"], mode="markers",
             name=f"Unclustered alerts ({len(noise):,})",
-            marker=dict(symbol="circle-open", color=NOISE_COLOR, size=_sizes(noise_stack["n"]),
+            marker=dict(symbol="circle-open", color=NOISE_COLOR, size=_sizes(noise_stack["n"], max_count),
                         line=dict(width=1.5, color=NOISE_COLOR)),
             text=_hover(noise_stack, inc_by_id, noise=True),
             hovertemplate="%{text}<extra></extra>",
@@ -306,17 +349,38 @@ def build_cluster_map(
     for name, color, stack in stacks:
         fig.add_trace(go.Scattergl(
             x=stack["x"], y=stack["y"], mode="markers", name=name,
-            marker=dict(color=color, size=_sizes(stack["n"]), opacity=0.9,
+            marker=dict(color=color, size=_sizes(stack["n"], max_count), opacity=0.9,
                         # Surface-coloured ring keeps overlapping markers apart.
                         line=dict(width=1, color=SURFACE)),
             text=_hover(stack, inc_by_id, noise=False),
             hovertemplate="%{text}<extra></extra>",
         ))
 
+    offsets = [(-50, -40), (50, 40), (50, -40)]     # px from a highlighted incident to its boxed label
+    highlighted = [i for i in sorted(slots, key=slots.get) if i in inc_by_id]
+
+    # Incident view: name the biggest non-highlighted bubbles too, so the map reads without hovering.
+    if by_incident:
+        spots = pts[~pts["is_noise"]].groupby("incident_id").agg(x=("x", "first"), y=("y", "first"), n=("x", "size"))
+        to_px = np.array([1000, 520]) / np.ptp(pts[["x", "y"]].to_numpy(), axis=0).clip(1e-9)   # approx. plot area
+        # Label centres already taken (px, y up), starting with the boxed labels of the highlights.
+        taken = [spots.loc[i, ["x", "y"]].to_numpy() * to_px + (offsets[n % 3][0], -offsets[n % 3][1])
+                 for n, i in enumerate(highlighted) if i in spots.index]
+        for inc_id, r in spots[~spots.index.isin(highlighted) & spots.index.isin(inc_by_id)].nlargest(12, "n").iterrows():
+            lift = _sizes(r["n"], max_count) / 2 + 2
+            at = np.array([r["x"], r["y"]]) * to_px + (0, lift + 7)
+            if any(abs(at[0] - q[0]) < 200 and abs(at[1] - q[1]) < 20 for q in taken):
+                continue                      # would print over a label already there
+            taken.append(at)
+            fig.add_annotation(
+                x=r["x"], y=r["y"], showarrow=False, yanchor="bottom", yshift=lift,
+                text=html.escape(family_label(inc_by_id[inc_id].get("family"))),
+                font=dict(size=10, color=INK, family="IBM Plex Mono"),
+            )
+
     # Direct labels for the highlighted incidents, pinned to each incident's weighted medoid:
     # a real marker in the middle of where most of its alerts are, even if it spans several islands.
-    offsets = [(-50, -40), (50, 40), (50, -40)]
-    for n, inc_id in enumerate(i for i in sorted(slots, key=slots.get) if i in inc_by_id):
+    for n, inc_id in enumerate(highlighted):
         sub = pts[pts["incident_id"] == inc_id]
         if sub.empty:
             continue
@@ -345,8 +409,10 @@ def build_cluster_map(
 
     # Plotly titles don't wrap, so the key is split into short lines that fit a narrow column.
     key = [
-        f"Dot = alerts that look the same · bigger = more (largest {int(max_count):,})",
-        "Closer dots = more similar signature, port and protocol",
+        (f"Bubble = one incident · bigger = more alerts (largest {int(max_count):,})" if by_incident else
+         f"Dot = alerts that look the same · bigger = more (largest {int(max_count):,})"),
+        ("Closer bubbles = incidents made of more similar alerts" if by_incident else
+         "Closer dots = more similar signature, port and protocol"),
         f"Colour = {_COLOR_MEANING.get(color_by, color_by)} · ring = in no incident",
     ]
     fig.update_layout(
@@ -367,7 +433,7 @@ def build_cluster_map(
                         font=dict(family="IBM Plex Mono", size=11, color=INK)),
         title=dict(
             text=(
-                f"<b>Alert similarity map</b> · {method}<br>"
+                f"<b>{'Incident' if by_incident else 'Alert'} similarity map</b> · {method}<br>"
                 f"{n_clustered:,} alerts in {len(incidents)} incidents · {n_noise:,} unclustered"
                 + "".join(f"<br><span style='font-size:11px;color:{MUTED_INK}'>{line}</span>" for line in key)
             ),

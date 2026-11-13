@@ -353,17 +353,18 @@ with st.sidebar:
     algo = st.radio(
         "Algorithm",
         ["dbscan", "hierarchical", "optics"],
-        index=0,
+        index=1,
         help=(
-            "DBSCAN: density-based, requires ε and min_samples.\n"
-            "Hierarchical: agglomerative average-link, requires distance threshold.\n"
-            "OPTICS: variable-density extension of DBSCAN — no ε required, "
-            "handles clusters of varying density automatically."
+            "Hierarchical (default): agglomerative average-link. Most accurate in the "
+            "labelled benchmark (python -m src.eval) and does not chain unrelated alerts together.\n"
+            "DBSCAN: density-based, nearly as accurate at ε≈0.30 but chains through "
+            "in-between alerts, so it over-merges as ε grows.\n"
+            "OPTICS: least accurate here — it splits one campaign into many small incidents."
         ),
     )
 
     if algo == "dbscan":
-        eps = st.slider("DBSCAN ε (cosine dist)", 0.05, 0.80, 0.35, 0.01,
+        eps = st.slider("DBSCAN ε (cosine dist)", 0.05, 0.80, 0.30, 0.01,
             help="Max cosine distance between neighbouring points.")
         dist_threshold = 0.25
         xi            = 0.05
@@ -873,17 +874,23 @@ if st.session_state.results:
             with col_ctrl1:
                 proj_method = st.radio(
                     "Projection method",
-                    ["UMAP", "PCA", "t-SNE"],
+                    ["PCA", "UMAP", "t-SNE"],
                     horizontal=True,
                     help=(
-                        "UMAP: best cluster separation, requires umap-learn. "
-                        "PCA: instant, linear. "
-                        "t-SNE: good local structure, slow on large datasets."
+                        "PCA: instant, linear, and keeps real distances — incidents that are "
+                        "far apart on the map really are different. Best default for alerts. "
+                        "UMAP / t-SNE: stretch every dense patch to fill space, so a port scan "
+                        "(one distinct alert per port) takes over the map and everything else "
+                        "collapses into one pile. Useful only for zooming into local structure."
                     ),
                 )
             with col_ctrl2:
                 show_noise_map = st.checkbox("Show unclustered alerts", value=True,
                     help="Alerts that joined no incident (cluster_id = -1), drawn as hollow rings.")
+                by_incident = st.checkbox("One bubble per incident", value=True,
+                    help="On: each incident is a single bubble sized by its alert count, so every "
+                         "cluster is visible and none hide behind another. "
+                         "Off: every distinct alert is its own dot.")
             with col_ctrl3:
                 color_by = st.selectbox(
                     "Colour by",
@@ -929,8 +936,6 @@ if st.session_state.results:
 
                         if proj_method == "UMAP":
                             import umap
-                            reducer = umap.UMAP(n_components=2, n_neighbors=10, min_dist=0.3, random_state=42, metric="cosine")
-                            coords = reducer.fit_transform(embeddings)
                             reducer = umap.UMAP(n_components=2, random_state=42, metric="cosine",
                                                 n_neighbors=max(2, min(15, len(uniq) - 1)))
                             coords = reducer.fit_transform(uniq)[inverse]
@@ -1013,7 +1018,8 @@ if st.session_state.results:
                     method=_active_method,
                     x_title=x_label,
                     y_title=y_label,
-                    show_ticks=axis_ticks_meaningful,
+                    show_ticks=axis_ticks_meaningful and not by_incident,
+                    by_incident=by_incident,
                 )
                 st.plotly_chart(fig, use_container_width=True)
 
